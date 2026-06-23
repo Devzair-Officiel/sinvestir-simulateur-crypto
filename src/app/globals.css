@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Design tokens — DESIGN.md §4
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  /* Surfaces & texte */
+  --surface: #080C16;
+  --surface-soft: #0F172A;
+  --surface-elevated: #00173F;
+  --text-primary: #FFFFFF;
+  --text-muted: #9CA3AF;
+  --text-faint: #69758C;
+  --text-on-primary: #FFFFFF;
+
+  /* Marque & interactions */
+  --cta: #0049C6;
+  --cta-hover-filter: brightness(1.1);
+  --accent: #1098F7;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-focus: #1098F7;
+
+  /* Or — réservé au logo */
+  --gold: #E2BD2A;
+  --gold-gradient: linear-gradient(
+    105deg,
+    #D6AA00 0%, #E4C031 33%, #FFEA8F 49%, #E7C53D 52%,
+    #D6AB02 68%, #FFEA8F 82%, #E2BD2A 100%
+  );
+
+  /* Graphique (recharts, pas Tailwind) */
+  --chart-invested: #1098F7;
+  --chart-portfolio: #FFFFFF;
+  --chart-area: rgba(16, 152, 247, 0.18);
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-axis: #9CA3AF;
+
+  /* Forme */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Ombres */
+  --shadow-card: 0 18px 60px rgba(0, 0, 0, 0.35);
+  --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.22);
 }
 
+/* ============================================================
+   Tailwind v4 theme bridge
+   ============================================================ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-ink: var(--text-primary);
+  --color-ink-muted: var(--text-muted);
+  --color-ink-faint: var(--text-faint);
+  --color-cta: var(--cta);
+  --color-accent: var(--accent);
+  --color-gold: var(--gold);
+
+  --font-sans: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-soft: var(--shadow-soft);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   Base styles
+   ============================================================ */
+html {
+  font-feature-settings: "ss01" on, "ss02" on;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Halos de fond sobres — DESIGN.md §13
+   ============================================================ */
+.page-background {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(16, 152, 247, 0.10), transparent 32%),
+    radial-gradient(circle at 80% 20%, rgba(0, 73, 198, 0.08), transparent 28%),
+    var(--surface);
 }
