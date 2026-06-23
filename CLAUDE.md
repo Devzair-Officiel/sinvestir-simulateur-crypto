@@ -8,7 +8,7 @@ Plan de build séquencé et scope détaillé : `docs/INSTRUCTIONS_BUILD.md`. Ce 
 ## Stack (ne pas dévier)
 
 - Next.js (App Router) + TypeScript **strict**
-- Tailwind CSS — tokens repris de `simulateurs.sinvestir.fr`
+- Tailwind CSS **v4** — tokens via `@theme inline` dans `globals.css` (pas de `tailwind.config.ts`)
 - npm — déploiement Vercel
 - `recharts` (graphe), `zod` (validation), `vitest` (tests)
 - **PAS** de Docker, **PAS** de Supabase, **PAS** de base de données

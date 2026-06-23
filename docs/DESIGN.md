@@ -426,48 +426,35 @@ Disclaimer
 
 ---
 
-## 14. tailwind.config.ts
+## 14. Tailwind v4 — `@theme inline` dans `globals.css`
 
-```ts
-import type { Config } from 'tailwindcss';
+> **Pas de `tailwind.config.ts`.** Le projet utilise Tailwind CSS v4 (`@tailwindcss/postcss` v4), où la configuration se fait en CSS via `@theme inline`, pas dans un fichier JS/TS. Le bloc ci-dessous est le pont entre les custom properties `:root` (§4) et les utilitaires Tailwind.
 
-const config: Config = {
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ['var(--font-lexend)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-      },
-      colors: {
-        surface: {
-          DEFAULT: '#080C16',
-          soft: '#0F172A',
-          elevated: '#00173F',
-        },
-        ink: {
-          DEFAULT: '#FFFFFF',
-          muted: '#9CA3AF',
-          faint: '#69758C',
-        },
-        cta: '#0049C6',
-        accent: '#1098F7',
-        gold: '#E2BD2A',
-      },
-      borderRadius: {
-        sm: '8px',
-        md: '12px',
-        lg: '16px',
-        xl: '20px',
-      },
-      boxShadow: {
-        card: '0 18px 60px rgba(0,0,0,0.35)',
-        soft: '0 12px 40px rgba(0,0,0,0.22)',
-      },
-    },
-  },
-};
+```css
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-ink: var(--text-primary);
+  --color-ink-muted: var(--text-muted);
+  --color-ink-faint: var(--text-faint);
+  --color-cta: var(--cta);
+  --color-accent: var(--accent);
+  --color-gold: var(--gold);
 
-export default config;
+  --font-sans: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-soft: var(--shadow-soft);
+}
 ```
+
+Classes Tailwind résultantes : `bg-surface`, `bg-surface-soft`, `bg-surface-elevated`, `text-ink`, `text-ink-muted`, `text-ink-faint`, `bg-cta`, `text-accent`, `text-gold`, `rounded-sm/md/lg/xl`, `shadow-card`, `shadow-soft`, `font-sans`.
 
 ---
 
