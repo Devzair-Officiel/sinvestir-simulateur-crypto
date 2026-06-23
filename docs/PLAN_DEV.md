@@ -6,72 +6,92 @@ Référence : règles dans `CLAUDE.md`, spec dans `docs/INSTRUCTIONS_BUILD.md`, 
 
 ---
 
-## Phase 0 — Socle ✅ (fait)
+## Phase 0 — Socle ✅
 
-Scaffold Next.js + TS strict + Tailwind, `CLAUDE.md` rempli, push GitHub, déploiement Vercel day-zero.
+- [x] Scaffold Next.js + TS strict + Tailwind
+- [x] `CLAUDE.md` rempli
+- [x] Push GitHub
+- [x] Déploiement Vercel day-zero
 
 ---
 
-## Phase 1 — Thème & coquille visuelle (la démo « ressemble à S'investir » avant tout code métier)
+## Phase 1 — Thème & coquille visuelle ✅
 
-**Objectif** : une page live, vide mais déjà à l'identité S'investir, + les deux routes en place.
-**Pré-requis manuel** : vérifier dans les DevTools de `simulateurs.sinvestir.fr` la vraie `font-family`, les hex de fond/surface, le bleu + gold. Corriger `AUDIT_DESIGN.md` si écart.
-**À déléguer** : câbler `tailwind.config.ts` (couleurs, fontFamily, radius, shadows de l'audit) + `globals.css` (fond `--background`, effets radiaux sobres) ; squelettes `app/page.tsx` (header + titre + grille 2 colonnes vides) et `app/embed/page.tsx` (nu) ; police via `next/font`.
-**Vérifier** : `npm run build` OK ; la page reflète bien le dark dashboard (fond, cards, bleu, gold accent).
-**Checkpoint** : commit + deploy. L'URL live a déjà la bonne identité.
+- [x] Tokens DESIGN.md dans `globals.css` (`:root` + `@theme inline` Tailwind v4)
+- [x] Police Lexend via `next/font/google` (`--font-lexend`)
+- [x] `layout.tsx` : `lang="fr"`, métadonnées S'investir, `font-sans`
+- [x] `page.tsx` : squelette mode "full" (header, titre, grille 2 colonnes, bouton CTA pill)
+- [x] `embed/page.tsx` : version nue pour iframe (sans header, sans halos)
+- [x] Halos de fond sobres (`.page-background`)
+- [x] `npm run build` OK
+- [x] Docs mises à jour (DESIGN.md §14 corrigé pour Tailwind v4, CLAUDE.md)
 
 ---
 
 ## Phase 2 — Moteur de calcul (le cœur, sans UI)
 
-**Objectif** : la logique métier juste et testée, totalement découplée.
-**À déléguer** (plan mode d'abord) : `types/simulation.ts` ; interface `SimulationStrategy` ; `calculate-lump-sum.ts` + `calculate-dca.ts` ; `format-money.ts` ; `date-utils.ts` (**dates en UTC**) ; tests Vitest.
-**Décisions à trancher toi-même** : mapping date de versement → point de prix (le plus proche / premier ≥ date) ; cadence de la `timeline` du graphe (au pas des données prix, p. ex. journalier, avec l'investi qui marche par paliers) ; off-by-one sur le nombre de versements ; prix retenu pour « aujourd'hui ».
-**Vérifier** : `npm test` vert ; cas limites couverts (période vide, 1 seul versement, dernier versement = date de fin, point de prix manquant, prix nul, fin < début). Relire la maths DCA à la main.
-**Checkpoint** : commit (pas de deploy nécessaire, rien de visible — mais build OK).
+- [ ] `types/simulation.ts`
+- [ ] Interface `SimulationStrategy`
+- [ ] `calculate-lump-sum.ts` + tests
+- [ ] `calculate-dca.ts` + tests
+- [ ] `format-money.ts`
+- [ ] `date-utils.ts` (dates en UTC)
+- [ ] Cas limites couverts (période vide, 1 versement, prix manquant, prix nul, fin < début)
+- [ ] `npm test` vert, `npm run build` OK
 
 ---
 
-## Phase 3 — Données + fallback (tôt, car l'UI en dépend)
+## Phase 3 — Données + fallback
 
-**Objectif** : une source de prix fiable, qui marche même API coupée.
-**À déléguer** : `provider.ts` (interface) ; `fallback-data.ts` (séries BTC/ETH en dur, mensuelles, 2018→auj) **d'abord** ; puis `coingecko-client.ts` + `app/api/crypto/route.ts` (base `https://api.coingecko.com/api/v3`, header `x-cg-demo-api-key` côté serveur, **Zod** sur l'entrée ET la réponse, **allowlist** des cryptos, `AbortController` timeout, 429/échec → fallback, cache `revalidate`).
-**Vérifier** : avec la clé absente / API coupée, le provider sert le fallback sans erreur ; avec la clé, il sert le live. Aucune clé dans le bundle client.
-**Checkpoint** : commit + deploy.
+- [ ] `provider.ts` (interface `CryptoPriceProvider`)
+- [ ] `fallback-data.ts` (séries BTC/ETH en dur, mensuelles, 2018→auj)
+- [ ] `coingecko-client.ts` (Zod sur réponse, allowlist, `AbortController` timeout, 429→fallback)
+- [ ] `app/api/crypto/route.ts` (proxy serveur, clé masquée, Zod sur entrée, cache `revalidate`)
+- [ ] Test fallback API coupée / clé absente
+- [ ] Aucune clé dans le bundle client
+- [ ] `npm run build` OK
 
 ---
 
-## Phase 4 — UI branchée (simulation de bout en bout)
+## Phase 4 — UI branchée (simulation de bout en bout) — **MVP**
 
-**Objectif** : on saisit, on simule, on voit le résultat — sur la vraie chaîne.
-**À déléguer** : `SimulationForm.tsx` (préremplи Bitcoin, 100 €/mois, janv. 2020 → auj ; label montant dynamique ; fréquence désactivée en mode unique ; Simuler + Réinitialiser ; validation) ; `ResultSummary.tsx` (KPI cards + résumé pédagogique en phrase) ; `PerformanceChart.tsx` (recharts — **une seule définition** : valeur du portefeuille vs investi cumulé ; couleurs : investi cyan, valeur gold) ; `Disclaimer.tsx` ; `CryptoSimulator.tsx` qui injecte stratégie + provider (point de composition).
-**Vérifier** : simulation Bitcoin DCA complète, chiffres cohérents, graphe correct, états loading/erreur propres.
-**Checkpoint** : commit + deploy. **C'est le MVP livrable.**
+- [ ] `SimulationForm.tsx` (prérempli BTC 100€/mois janv 2020, label dynamique, validation Zod)
+- [ ] `ResultSummary.tsx` (KPI cards + résumé pédagogique)
+- [ ] `PerformanceChart.tsx` (recharts : investi cyan, valeur blanc)
+- [ ] `Disclaimer.tsx`
+- [ ] `CryptoSimulator.tsx` (point de composition : injecte stratégie + provider)
+- [ ] Simulation BTC DCA de bout en bout, chiffres cohérents
+- [ ] États loading / erreur propres
+- [ ] `npm run build` + `npm test` OK
 
 ---
 
 ## Phase 5 — Embed & responsive
 
-**Objectif** : intégrabilité prouvée + propre sur mobile.
-**À déléguer** : `mode="embed"` (sans header) sur `/embed` ; `next.config` avec CSP `frame-ancestors` (`sinvestir.fr`, `simulateurs.sinvestir.fr`, `*.vercel.app`) — **pas** `X-Frame-Options: DENY` ; passe responsive 375 / 768 / 1280 ; focus visibles.
-**Vérifier** : tester `/embed` dans une vraie `<iframe>` (une page HTML locale suffit) ; mobile sans débordement.
-**Checkpoint** : commit + deploy.
+- [ ] `mode="embed"` branché sur `/embed` via `<CryptoSimulator>`
+- [ ] `next.config` : CSP `frame-ancestors` (sinvestir.fr, simulateurs.sinvestir.fr, *.vercel.app)
+- [ ] Test `/embed` dans une vraie `<iframe>`
+- [ ] Passe responsive 375 / 768 / 1280
+- [ ] Focus visibles sur tous les inputs
 
 ---
 
 ## Phase 6 — Durcissement & qualité
 
-**Objectif** : cocher la Definition of Done.
-**À déléguer / faire** : en-têtes de sécurité (`nosniff`, `Referrer-Policy`) ; a11y (labels, `aria-*`, contrastes) ; `npm run lint` + `npm run build` + `npm test` verts ; `npm audit` ; mettre l'URL réelle dans le README + le snippet iframe.
-**Vérifier** : parcourir la checklist §10 de `INSTRUCTIONS_BUILD.md`.
-**Checkpoint** : commit + deploy.
+- [ ] En-têtes de sécurité (`nosniff`, `Referrer-Policy`)
+- [ ] A11y (labels, `aria-*`, contrastes)
+- [ ] `npm run lint` + `npm run build` + `npm test` verts
+- [ ] `npm audit`
+- [ ] README : URL réelle + snippet iframe
 
 ---
 
 ## Phase 7 — Livrable
 
-**Objectif** : rendre.
-**À faire** : **test fallback API coupée** une dernière fois sur la prod ; Loom 5 min (plan §8 du build doc) ; 3 suggestions dans le formulaire Tally ; soumettre démo + repo.
+- [ ] Test fallback API coupée sur la prod
+- [ ] Loom 5 min
+- [ ] 3 suggestions dans le formulaire Tally
+- [ ] Soumettre démo + repo
 
 ---
 
