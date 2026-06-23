@@ -2,7 +2,7 @@
 
 Principe : **chaque phase se termine sur un commit + un déploiement Vercel qui marche.** Jamais de `main` cassé. La démo est en ligne dès la phase 1, on l'enrichit ensuite. Pilotage Claude Code : on fait **planifier avant de coder**, on valide, il implémente, il **teste et montre le diff**.
 
-Référence : règles dans `CLAUDE.md`, spec dans `docs/INSTRUCTIONS_BUILD.md`, tokens dans `docs/AUDIT_DESIGN.md`.
+Référence : règles dans CLAUDE.md, spec dans docs/INSTRUCTIONS_BUILD.md, charte visuelle dans docs/DESIGN.md
 
 ---
 
