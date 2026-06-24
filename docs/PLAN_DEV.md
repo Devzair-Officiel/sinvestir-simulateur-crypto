@@ -28,16 +28,17 @@ Référence : règles dans CLAUDE.md, spec dans docs/INSTRUCTIONS_BUILD.md, char
 
 ---
 
-## Phase 2 — Moteur de calcul (le cœur, sans UI)
+## Phase 2 — Moteur de calcul (le cœur, sans UI) ✅
 
-- [ ] `types/simulation.ts`
-- [ ] Interface `SimulationStrategy`
-- [ ] `calculate-lump-sum.ts` + tests
-- [ ] `calculate-dca.ts` + tests
-- [ ] `format-money.ts`
-- [ ] `date-utils.ts` (dates en UTC)
-- [ ] Cas limites couverts (période vide, 1 versement, prix manquant, prix nul, fin < début)
-- [ ] `npm test` vert, `npm run build` OK
+- [x] `types/simulation.ts`
+- [x] Interface `SimulationStrategy`
+- [x] `calculate-lump-sum.ts` + tests
+- [x] `calculate-dca.ts` + tests
+- [x] `format-money.ts`
+- [x] `date-utils.ts` (dates en UTC)
+- [x] Cas limites couverts (période vide, 1 versement, prix manquant, prix nul, fin < début)
+- [x] `npm test` vert, `npm run build` OK
+- Tests : 40 passés en 408 ms
 
 ---
 
