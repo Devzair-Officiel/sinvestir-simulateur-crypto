@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { CRYPTO_IDS } from '@/types/simulation';
-import { createCoinGeckoProvider } from '@/lib/crypto/coingecko-client';
+import { krakenProvider } from '@/lib/crypto/kraken-client';
 import { fallbackProvider } from '@/lib/crypto/fallback-data';
 import { ProviderError } from '@/lib/crypto/provider';
 
@@ -43,38 +43,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const startDate = new Date(`${from}T00:00:00.000Z`);
   const endDate = new Date(`${to}T00:00:00.000Z`);
 
-  // ── Essai CoinGecko → fallback ───────────────────────────
+  // ── Essai Kraken → fallback ──────────────────────────────
 
-  const apiKey = process.env.COINGECKO_API_KEY ?? '';
+  try {
+    const points = await krakenProvider.getMarketChart({
+      cryptoId: id,
+      startDate,
+      endDate,
+    });
 
-  // Si clé absente, on passe directement au fallback
-  if (apiKey) {
-    try {
-      const provider = createCoinGeckoProvider(apiKey);
-      const points = await provider.getMarketChart({
-        cryptoId: id,
-        startDate,
-        endDate,
-      });
-
-      return NextResponse.json(
-        { points },
-        {
-          status: 200,
-          headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate' },
-        },
-      );
-    } catch (err: unknown) {
-      // not-supported sur CoinGecko : on essaie quand même le fallback
-      // upstream / timeout / invalid-response / missing-config : fallback
-      if (
-        err instanceof ProviderError &&
-        err.kind === 'not-supported'
-      ) {
-        // CoinGecko ne supporte pas ce crypto — fallback peut-être non plus
-      }
-      // On tombe dans le fallback ci-dessous
-    }
+    return NextResponse.json(
+      { points },
+      {
+        status: 200,
+        headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate' },
+      },
+    );
+  } catch {
+    // Kraken échoue (not-supported, upstream, timeout, invalid-response) → fallback
   }
 
   // ── Fallback ─────────────────────────────────────────────

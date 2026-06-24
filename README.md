@@ -159,3 +159,14 @@ Pistes pensées pour la **suite de simulateurs**, au-delà du test :
 ## Avertissement
 
 Les résultats sont des **simulations rétrospectives** fondées sur des données historiques. Ils ne constituent ni une prévision, ni une recommandation d'investissement. Les crypto-actifs sont très volatils et comportent un risque de perte en capital. Les performances passées ne préjugent pas des performances futures.
+
+## Source des données
+
+Les prix historiques sont récupérés via l'API publique de Kraken
+(endpoint OHLC, paire XBT/EUR et ETH/EUR). CoinGecko Demo API a été
+évalué mais son tier gratuit ne couvre que les 365 derniers jours —
+insuffisant pour un backtesting sur plusieurs années. Kraken fournit
+un historique complet depuis 2018 sans authentification requise.
+
+Un fallback local (données hebdomadaires 2018→2026) garantit que la
+démo reste fonctionnelle même sans accès réseau.

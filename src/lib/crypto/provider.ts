@@ -37,8 +37,7 @@ export class ProviderError extends Error {
       | 'not-supported'
       | 'upstream'
       | 'timeout'
-      | 'invalid-response'
-      | 'missing-config',
+      | 'invalid-response',
     message: string,
   ) {
     super(message);

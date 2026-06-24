@@ -27,13 +27,13 @@ src/
   app/
     page.tsx               # mode "full"
     embed/page.tsx         # mode "embed" (iframe)
-    api/crypto/route.ts    # proxy CoinGecko (masque la clé, cache)
+    api/crypto/route.ts    # proxy Kraken (cache)
   components/simulator/
     CryptoSimulator.tsx    # racine, mode "full" | "embed"
     SimulationForm.tsx  ResultSummary.tsx  PerformanceChart.tsx
     ScenarioCards.tsx   Disclaimer.tsx
   lib/
-    crypto/      provider.ts  coingecko-client.ts  fallback-data.ts
+    crypto/      provider.ts  kraken-client.ts  fallback-data.ts
     simulation/  calculate-dca.ts  calculate-lump-sum.ts  format-money.ts  date-utils.ts
   types/         simulation.ts
 ```
@@ -41,9 +41,9 @@ src/
 ## Architecture — SOLID (non négociable)
 
 - **SRP** : calcul / récupération de données / formatage / UI strictement séparés. **JAMAIS de logique métier dans le JSX.**
-- **DIP** : l'UI et le moteur dépendent des abstractions `CryptoPriceProvider` et `SimulationStrategy`, jamais de CoinGecko en dur. Le provider concret est injecté depuis un point de composition (factory).
+- **DIP** : l'UI et le moteur dépendent des abstractions `CryptoPriceProvider` et `SimulationStrategy`, jamais de Kraken en dur. Le provider concret est injecté depuis un point de composition.
 - **OCP** : nouvelle source de prix = nouvelle implémentation du provider ; nouveau mode de calcul = nouvelle stratégie. On n'édite pas l'existant.
-- **LSP** : toute implémentation de provider (coingecko, fallback) est substituable — même contrat, même forme de retour, mêmes sémantiques d'erreur.
+- **LSP** : toute implémentation de provider (kraken, fallback) est substituable — même contrat, même forme de retour, mêmes sémantiques d'erreur.
 - **ISP** : interfaces minimales, props de composants étroites.
 
 ## Règles métier — calcul (revérifier à chaque modif)
@@ -58,8 +58,8 @@ src/
 
 - Valider **toutes** les entrées avec Zod : formulaire **et** route `/api/crypto`. `unknown` en entrée → type sûr en sortie.
 - **Allowlist** stricte des cryptos : l'id part dans l'URL upstream → jamais de valeur brute du client (anti SSRF / injection de chemin).
-- Clé API CoinGecko **côté serveur uniquement** (route `/api/crypto`), jamais en `NEXT_PUBLIC_`, jamais loggée.
-- Valider **aussi la réponse CoinGecko** avec Zod (*parse, don't assume*).
+- Kraken API publique, pas de clé requise.
+- Valider **aussi la réponse Kraken** avec Zod (*parse, don't assume*).
 - `fetch` upstream avec timeout (`AbortController`). 429 / échec / lenteur → bascule sur le fallback local.
 - Embed : autoriser via CSP **`frame-ancestors`** (`sinvestir.fr`, `simulateurs.sinvestir.fr`, `*.vercel.app`) dans `next.config`. **NE PAS** utiliser `X-Frame-Options: DENY` (casserait l'iframe).
 - Jamais de `dangerouslySetInnerHTML`. Erreurs jamais bavardes côté client (pas de stack, pas de message upstream).
@@ -74,9 +74,10 @@ src/
 
 ## Données & fallback
 
-- CoinGecko `/coins/{id}/market_chart/range?vs_currency=eur&from&to`, via `/api/crypto` (cache `revalidate`).
-- Allowlist : `bitcoin`, `ethereum`, `solana`, `binancecoin`, `ripple`, `cardano`.
-- `fallback-data.ts` : séries BTC/ETH en dur → la démo fonctionne **toujours**, même API indisponible.
+- Kraken `/0/public/OHLC?pair=XXBTZEUR&interval=10080&since=`, via `/api/crypto` (cache `s-maxage=3600`). API publique, pas de clé requise.
+- Paires supportées : `bitcoin` → XXBTZEUR, `ethereum` → XETHZEUR. Les autres cryptos tombent sur le fallback.
+- Allowlist (validation Zod route) : `bitcoin`, `ethereum`, `solana`, `binancecoin`, `ripple`, `cardano`.
+- `fallback-data.ts` : séries hebdomadaires BTC/ETH en dur (Kraken OHLC, jan 2018 → juin 2026) → la démo fonctionne **toujours**, même API indisponible.
 
 ## UI / UX
 
