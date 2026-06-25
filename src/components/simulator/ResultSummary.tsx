@@ -44,7 +44,7 @@ export default function ResultSummary({ result, cryptoId, mode, startDate, endDa
   const kpis: { label: string; value: string; color?: string }[] = [
     { label: 'Total investi', value: formatCurrency(r.totalInvested) },
     { label: 'Valeur finale', value: formatCurrency(r.finalValue) },
-    { label: 'Plus / moins-value', value: `${positive ? '+' : ''}${formatCurrency(r.gainLoss)}`, color: colorCls },
+    { label: 'Gain / Perte', value: `${positive ? '+' : ''}${formatCurrency(r.gainLoss)}`, color: colorCls },
     { label: 'Performance', value: `${positive ? '+' : ''}${formatPercent(r.performance)}`, color: colorCls },
     { label: 'Nb. versements', value: String(r.paymentCount) },
     { label: 'Prix moyen d\u2019achat', value: formatCurrency(r.averageBuyPrice) },

@@ -69,17 +69,17 @@ Référence : règles dans CLAUDE.md, spec dans docs/INSTRUCTIONS_BUILD.md, char
 
 ## Phase 5 — Embed & responsive
 
-- [ ] `mode="embed"` branché sur `/embed` via `<CryptoSimulator>`
-- [ ] `next.config` : CSP `frame-ancestors` (sinvestir.fr, simulateurs.sinvestir.fr, *.vercel.app)
-- [ ] Test `/embed` dans une vraie `<iframe>`
-- [ ] Passe responsive 375 / 768 / 1280
-- [ ] Focus visibles sur tous les inputs
+- [x] `mode="embed"` branché sur `/embed` via `<CryptoSimulator>`
+- [x] `next.config` : CSP `frame-ancestors` (sinvestir.fr, simulateurs.sinvestir.fr, *.vercel.app) + `http://localhost:*` en dev
+- [x] En-têtes de sécurité (`nosniff`, `Referrer-Policy`) — anticipés de la phase 6
+- [x] Test `/embed` dans une vraie `<iframe>` (`test-embed.html` racine, gitignoré)
+- [x] Passe responsive 375 / 768 / 1280
+- [x] Focus visibles sur tous les inputs (`*:focus-visible` global dans `globals.css`)
 
 ---
 
 ## Phase 6 — Durcissement & qualité
 
-- [ ] En-têtes de sécurité (`nosniff`, `Referrer-Policy`)
 - [ ] A11y (labels, `aria-*`, contrastes)
 - [ ] `npm run lint` + `npm run build` + `npm test` verts
 - [ ] `npm audit`
