@@ -42,15 +42,15 @@ Référence : règles dans CLAUDE.md, spec dans docs/INSTRUCTIONS_BUILD.md, char
 
 ---
 
-## Phase 3 — Données + fallback
+## Phase 3 — Données + fallback ✅
 
-- [ ] `provider.ts` (interface `CryptoPriceProvider`)
-- [ ] `fallback-data.ts` (séries BTC/ETH en dur, mensuelles, 2018→auj)
-- [ ] `coingecko-client.ts` (Zod sur réponse, allowlist, `AbortController` timeout, 429→fallback)
-- [ ] `app/api/crypto/route.ts` (proxy serveur, clé masquée, Zod sur entrée, cache `revalidate`)
-- [ ] Test fallback API coupée / clé absente
-- [ ] Aucune clé dans le bundle client
-- [ ] `npm run build` OK
+- [x] `provider.ts` (interface `CryptoPriceProvider`)
+- [x] `fallback-data.ts` (séries BTC/ETH en dur, hebdomadaires, 2018→juin 2026)
+- [x] `kraken-client.ts` (Zod sur réponse, allowlist, `AbortController` timeout, 429→fallback)
+- [x] `app/api/crypto/route.ts` (proxy serveur, Zod sur entrée, cache `s-maxage=3600`)
+- [x] Test fallback API coupée
+- [x] Aucun secret dans le bundle client (Kraken API publique, pas de clé)
+- [x] `npm run build` OK
 
 ---
 

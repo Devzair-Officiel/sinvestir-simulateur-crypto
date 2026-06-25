@@ -2,8 +2,8 @@
 
 Transposition du [simulateur crypto S'investir](https://sinvestir.fr/simulateur-crypto-monnaie/) en composant **Next.js autonome, responsive et intégrable**, aligné sur l'identité visuelle de la suite [simulateurs.sinvestir.fr](https://simulateurs.sinvestir.fr/).
 
-> **Démo en ligne** : https://sinvestir-simulateur-crypto-tau.vercel.app
-> **Mode embed** : https://sinvestir-simulateur-crypto-tau.vercel.app/embed
+> **Démo en ligne** : [sinvestir-simulateur-crypto-tau.vercel.app](https://sinvestir-simulateur-crypto-tau.vercel.app)
+> **Mode embed** : [sinvestir-simulateur-crypto-tau.vercel.app/embed](https://sinvestir-simulateur-crypto-tau.vercel.app/embed)
 
 ---
 
@@ -19,34 +19,38 @@ Le rendu est pensé comme un **composant réutilisable**, prêt à vivre dans la
 
 | Choix | Raison |
 |---|---|
-| **Next.js (App Router) + TypeScript** | Aligné sur votre stack interne ; reprise et intégration sans friction. |
-| **Tailwind CSS** | Tokens de design extraits de votre suite → fidélité visuelle maîtrisée. |
-| **Vercel** | Déploiement natif Next.js, identique à vos simulateurs. |
-| **Provider crypto isolé** | Source de données derrière une interface (Kraken aujourd'hui, API interne ou cache demain). |
+| **Next.js 15 (App Router) + TypeScript strict** | Aligné sur votre stack interne ; reprise et intégration sans friction. |
+| **Tailwind CSS v4** | Tokens de design extraits directement du CSS live de `simulateurs.sinvestir.fr` → fidélité visuelle maîtrisée, pas approximée. |
+| **Vercel** | Déploiement natif Next.js, identique à vos simulateurs. Zéro configuration. |
+| **Kraken API (publique)** | Historique complet depuis 2018, sans clé. Source isolée derrière une interface — remplaçable sans toucher au reste. |
+| **Zod** | Validation stricte des entrées formulaire et route API. |
+| **Vitest** | Tests unitaires sur les fonctions de calcul financier. |
 
-Pas de base de données : le périmètre ne le justifie pas. La persistance (capture de lead, cache de prix) est proposée en piste d'évolution, pas embarquée ici.
+Pas de base de données : le périmètre ne le justifie pas. La persistance (capture de lead, cache de prix) est proposée en piste d'évolution.
 
 ---
 
 ## Source des données
 
-Les prix historiques sont récupérés via l'API publique de Kraken (endpoint OHLC hebdomadaire, paires XXBTZEUR et XETHZEUR). CoinGecko Demo API a été évalué mais son tier gratuit limite l'accès aux 365 derniers jours — insuffisant pour un backtesting sur plusieurs années. Kraken fournit un historique complet depuis 2018 sans authentification requise.
+Les prix historiques sont récupérés via l'**API publique Kraken** (endpoint OHLC hebdomadaire, paires XXBTZEUR et XETHZEUR). Aucune clé API requise.
 
-Un fallback local (données hebdomadaires 2018→2026) garantit que la démo reste fonctionnelle même sans accès réseau.
+> CoinGecko Demo API a été évalué en premier mais restreint l'accès aux 365 derniers jours sur son tier gratuit — insuffisant pour un backtesting sur plusieurs années. Kraken fournit un historique complet depuis 2018 sans authentification.
+
+Un **fallback local** (données hebdomadaires 2018 → 2026 intégrées en dur) garantit que la démo reste fonctionnelle même sans accès réseau. La source de données est isolée derrière une interface `CryptoPriceProvider` : remplacer Kraken par une API interne ou un cache Supabase ne touche qu'un seul fichier.
 
 ---
 
 ## Fonctionnalités
 
 - Sélection de la cryptomonnaie (BTC, ETH, SOL, BNB, XRP, ADA)
-- Versement unique **ou** DCA (quotidien / hebdomadaire / mensuel)
-- Période personnalisée (date de début / fin)
-- Résultats : total investi, valeur finale, plus/moins-value (€), performance (%), nombre de versements, prix moyen d'achat, quantité accumulée
-- Graphique : valeur du portefeuille vs montant cumulé investi
+- Versement unique **ou** DCA (hebdomadaire / mensuel)
+- Période personnalisée (date de début / fin, depuis janvier 2018)
+- Résultats : total investi, valeur finale, gain/perte (€ et %), nombre de versements, prix moyen d'achat, quantité accumulée
+- Graphique : valeur du portefeuille vs montant cumulé investi (recharts)
 - Résumé pédagogique en langage clair
-- Avertissement risque traité comme **composant de premier plan**, pas comme un bas de page
-- **Mode embed** pour intégration iframe
-- **Fallback local** si l'API est indisponible → la démo fonctionne toujours
+- Avertissement risque en **composant de premier plan** (pas un bas de page discret)
+- **Mode embed** pour intégration iframe dans une page externe
+- **Fallback automatique** si l'API est indisponible → la démo ne casse jamais
 
 ---
 
@@ -57,38 +61,38 @@ src/
   app/
     page.tsx                 # page complète (header, intro, contexte)
     embed/page.tsx           # version nue, pensée pour iframe
-    api/crypto/route.ts      # proxy Kraken : valide les entrées, met en cache
+    api/crypto/route.ts      # proxy Kraken : validation Zod, cache 1h
   components/simulator/
-    CryptoSimulator.tsx      # composant racine, mode "full" | "embed"
-    SimulationForm.tsx
-    ResultSummary.tsx
-    PerformanceChart.tsx
-    ScenarioCards.tsx
-    Disclaimer.tsx
+    CryptoSimulator.tsx      # orchestrateur UI (rendu pur)
+    useSimulation.ts         # hook : fetch + sélection stratégie + état
+    SimulationForm.tsx       # formulaire avec validation Zod client
+    ResultSummary.tsx        # KPI cards + résumé pédagogique
+    PerformanceChart.tsx     # graphique recharts
+    Disclaimer.tsx           # avertissement réglementaire
   lib/
     crypto/
-      provider.ts            # interface CryptoPriceProvider
-      kraken-client.ts       # implémentation Kraken (API publique)
-      fallback-data.ts       # jeu de données local BTC / ETH
+      provider.ts            # interface CryptoPriceProvider + schémas Zod
+      kraken-client.ts       # implémentation Kraken (OHLC, AbortController 8s)
+      fallback-data.ts       # séries BTC/ETH hebdomadaires 2018-2026
     simulation/
-      calculate-dca.ts       # fonctions pures, testables
-      calculate-lump-sum.ts
-      format-money.ts
-      date-utils.ts
+      calculate-dca.ts       # stratégie DCA (fonctions pures, testées)
+      calculate-lump-sum.ts  # stratégie versement unique (fonctions pures, testées)
+      format-money.ts        # Intl.NumberFormat fr-FR
+      date-utils.ts          # génération des échéances, UTC strict
   types/
-    simulation.ts
+    simulation.ts            # unions discriminées, SimulationStrategy, SimulationResult
 ```
 
-Principe directeur : **la logique métier ne touche jamais le JSX**. Les calculs (`lib/simulation`) sont des fonctions pures, indépendantes de l'UI et de la source de données. La récupération des prix passe par une interface `CryptoPriceProvider` — remplacer Kraken par une API interne ne change qu'un fichier.
+**Principe directeur** : la logique métier ne touche jamais le JSX. Les calculs (`lib/simulation`) sont des fonctions pures, indépendantes de l'UI et de la source de données.
 
 ---
 
 ## Logique de calcul
 
-- **Versement unique** : le montant saisi est le **total investi**. Quantité = montant ÷ prix à la date de début ; valeur finale = quantité × prix à la date de fin.
-- **DCA** : le montant saisi est investi **à chaque échéance**. À chaque date de versement, quantité += montant ÷ prix du jour. Total investi = montant × nombre de versements ; prix moyen d'achat = total investi ÷ quantité totale.
+- **Versement unique** : montant saisi = total investi. Quantité = montant ÷ prix à la date de début ; valeur finale = quantité × prix à la date de fin.
+- **DCA** : montant saisi = montant **par versement**. À chaque échéance, quantité += montant ÷ prix du jour. Total investi = montant × nb versements ; prix moyen d'achat = total investi ÷ quantité totale.
 
-L'ambiguïté « montant total » vs « montant par versement » est levée explicitement dans l'interface, pour éviter toute lecture erronée des résultats.
+L'ambiguïté « montant total » vs « montant par versement » est levée explicitement dans l'interface via un label dynamique, pour éviter toute lecture erronée des résultats.
 
 ---
 
@@ -100,17 +104,18 @@ npm run dev      # http://localhost:3000
 ```
 
 ```bash
-npm run lint     # passe sans erreur
-npm run build    # passe sans erreur
+npm run lint     # 0 erreur
+npm run build    # build de production
+npm test         # 69 tests Vitest
 ```
 
-Aucune variable d'environnement requise : l'API publique Kraken ne nécessite pas de clé. En cas d'indisponibilité réseau, le fallback local prend automatiquement le relais.
+Aucune variable d'environnement requise : l'API Kraken est publique. En cas d'indisponibilité réseau, le fallback local prend automatiquement le relais.
 
 ---
 
 ## Mode embed
 
-Le simulateur est conçu pour être embarqué tel quel via iframe :
+Le simulateur est conçu pour être embarqué via iframe sur n'importe quelle page :
 
 ```html
 <iframe
@@ -122,43 +127,39 @@ Le simulateur est conçu pour être embarqué tel quel via iframe :
 ></iframe>
 ```
 
-La route `/embed` rend le même composant sans header ni contexte de page : peu de dépendances, intégration propre.
+La route `/embed` rend le même composant sans header ni contexte de page. La CSP `frame-ancestors` est configurée pour autoriser l'embed sur `sinvestir.fr`, `simulateurs.sinvestir.fr` et `*.vercel.app` uniquement.
 
 ---
 
-## Partis pris
+## Partis pris techniques
 
-- Séparation stricte entre **UI**, **calculs** et **récupération des données** (SRP).
-- Source de prix et modes de calcul derrière des **interfaces** (`CryptoPriceProvider`, `SimulationStrategy`) : ouverts à l'extension, fermés à la modification (OCP/DIP). Remplacer Kraken ou ajouter un mode ne touche pas l'existant.
-- Composant principal réutilisable (`mode="full"` / `mode="embed"`).
-- **Validation systématique des entrées** (formulaire et route API), **secrets côté serveur uniquement**, embed contrôlé par `frame-ancestors`.
-- Fallback local pour garantir une démo fonctionnelle même API indisponible.
-- TypeScript strict, fonctions de calcul pures et testées, garde-fous numériques.
-- Avertissement pédagogique en composant visible, dans l'esprit réglementaire de votre univers.
-- Montant DCA clarifié (par versement) pour éviter toute confusion sur les résultats.
+- **SOLID appliqué** : `CryptoPriceProvider` et `SimulationStrategy` sont des interfaces — ouverts à l'extension, fermés à la modification. Ajouter une source de prix ou un mode de calcul = un nouveau fichier, zéro modification de l'existant.
+- **Validation systématique** : Zod sur les entrées formulaire *et* sur la route API (input *et* réponse upstream — *parse, don't assume*).
+- **Sécurité embed** : `frame-ancestors` CSP plutôt que `X-Frame-Options: DENY` pour contrôler précisément les origines autorisées sans bloquer l'iframe.
+- **Fallback garanti** : le proxy bascule automatiquement sur les données locales sur timeout (8s), erreur upstream ou rate-limit — la démo ne casse jamais pendant une évaluation.
+- **Server Components par défaut** : `"use client"` uniquement sur les parties interactives (formulaire, graphique). Idiome App Router.
+- **Calculs financiers testés** : fonctions pures avec 69 tests Vitest couvrant les cas nominaux et les cas limites (prix nul, NaN, période vide, fin < début, clamp de fin de mois).
 
 ---
 
 ## Limites connues
 
-- Périmètre volontairement réduit à un MVP, dans l'esprit « demi-journée ».
-- Les données dépendent de l'API et de sa disponibilité (d'où le fallback local).
+- Couverture Kraken : BTC et ETH uniquement en données live. Les autres cryptos (SOL, BNB, XRP, ADA) sont proposées dans le formulaire mais basculent sur le fallback local — qui ne couvre que BTC/ETH, donc retournent une erreur pédagogique. Extensible via le mapping de paires Kraken.
+- Données hebdomadaires (non journalières) : la granularité Kraken free tier est 1 semaine. Suffisant pour un DCA mensuel ; le DCA quotidien donne des résultats approximatifs.
 - Les résultats sont des simulations rétrospectives, non prédictives.
 
 ---
 
 ## Améliorations proposées
 
-Pistes pensées pour la **suite de simulateurs**, au-delà du test :
+Pistes orientées métier pour la suite :
 
-- **Design system commun** à tous les simulateurs : cards, inputs, sliders, graphiques, disclaimers mutualisés.
-- **Moteur de simulation partagé** : intérêts composés, DCA, inflation, frais, crédit, crypto derrière une même logique de calcul.
-- **Tracking d'usage** : taux de complétion, paramètres les plus utilisés, clics CTA, erreurs API → matière à dashboard de pilotage.
-- **Capture de lead optionnelle** (« recevoir le rapport de ma simulation ») branchée sur HubSpot, avec persistance Supabase ou cache de prix côté serveur.
-- Comparaison multi-cryptos et export PDF / CSV.
+- **Design system commun** : mutualiser cards, inputs, graphiques et disclaimers entre tous les simulateurs pour une cohérence et une vélocité accrues.
+- **Moteur de simulation partagé** : intérêts composés, DCA, inflation, frais, crédit, crypto derrière une même interface de calcul — testée et réutilisable sur toute la suite.
+- **Tracking d'usage + capture de lead** : taux de complétion, paramètres les plus utilisés, clics CTA → dashboard de pilotage ; en option, capture email vers HubSpot pour transformer l'audience des simulateurs en leads mesurables.
 
 ---
 
 ## Avertissement
 
-Les résultats sont des **simulations rétrospectives** fondées sur des données historiques. Ils ne constituent ni une prévision, ni une recommandation d'investissement. Les crypto-actifs sont très volatils et comportent un risque de perte en capital. Les performances passées ne préjugent pas des performances futures.
+Les résultats sont des **simulations rétrospectives** fondées sur des données historiques. Ils ne constituent ni une prévision ni une recommandation d'investissement. Les crypto-actifs sont très volatils et comportent un risque de perte en capital. Les performances passées ne préjugent pas des performances futures.

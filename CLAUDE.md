@@ -31,7 +31,7 @@ src/
   components/simulator/
     CryptoSimulator.tsx    # racine, mode "full" | "embed"
     SimulationForm.tsx  ResultSummary.tsx  PerformanceChart.tsx
-    ScenarioCards.tsx   Disclaimer.tsx
+    Disclaimer.tsx
   lib/
     crypto/      provider.ts  kraken-client.ts  fallback-data.ts
     simulation/  calculate-dca.ts  calculate-lump-sum.ts  format-money.ts  date-utils.ts
