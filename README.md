@@ -2,8 +2,8 @@
 
 Transposition du [simulateur crypto S'investir](https://sinvestir.fr/simulateur-crypto-monnaie/) en composant **Next.js autonome, responsive et intégrable**, aligné sur l'identité visuelle de la suite [simulateurs.sinvestir.fr](https://simulateurs.sinvestir.fr/).
 
-> **Démo en ligne** : https://VOTRE-DEMO.vercel.app
-> **Mode embed** : https://VOTRE-DEMO.vercel.app/embed
+> **Démo en ligne** : https://sinvestir-simulateur-crypto-tau.vercel.app
+> **Mode embed** : https://sinvestir-simulateur-crypto-tau.vercel.app/embed
 
 ---
 
@@ -22,9 +22,17 @@ Le rendu est pensé comme un **composant réutilisable**, prêt à vivre dans la
 | **Next.js (App Router) + TypeScript** | Aligné sur votre stack interne ; reprise et intégration sans friction. |
 | **Tailwind CSS** | Tokens de design extraits de votre suite → fidélité visuelle maîtrisée. |
 | **Vercel** | Déploiement natif Next.js, identique à vos simulateurs. |
-| **Provider crypto isolé** | Source de données derrière une interface (CoinGecko aujourd'hui, API interne ou cache demain). |
+| **Provider crypto isolé** | Source de données derrière une interface (Kraken aujourd'hui, API interne ou cache demain). |
 
 Pas de base de données : le périmètre ne le justifie pas. La persistance (capture de lead, cache de prix) est proposée en piste d'évolution, pas embarquée ici.
+
+---
+
+## Source des données
+
+Les prix historiques sont récupérés via l'API publique de Kraken (endpoint OHLC hebdomadaire, paires XXBTZEUR et XETHZEUR). CoinGecko Demo API a été évalué mais son tier gratuit limite l'accès aux 365 derniers jours — insuffisant pour un backtesting sur plusieurs années. Kraken fournit un historique complet depuis 2018 sans authentification requise.
+
+Un fallback local (données hebdomadaires 2018→2026) garantit que la démo reste fonctionnelle même sans accès réseau.
 
 ---
 
@@ -49,7 +57,7 @@ src/
   app/
     page.tsx                 # page complète (header, intro, contexte)
     embed/page.tsx           # version nue, pensée pour iframe
-    api/crypto/route.ts      # proxy CoinGecko : masque la clé, met en cache
+    api/crypto/route.ts      # proxy Kraken : valide les entrées, met en cache
   components/simulator/
     CryptoSimulator.tsx      # composant racine, mode "full" | "embed"
     SimulationForm.tsx
@@ -60,7 +68,7 @@ src/
   lib/
     crypto/
       provider.ts            # interface CryptoPriceProvider
-      coingecko-client.ts    # implémentation CoinGecko
+      kraken-client.ts       # implémentation Kraken (API publique)
       fallback-data.ts       # jeu de données local BTC / ETH
     simulation/
       calculate-dca.ts       # fonctions pures, testables
@@ -71,7 +79,7 @@ src/
     simulation.ts
 ```
 
-Principe directeur : **la logique métier ne touche jamais le JSX**. Les calculs (`lib/simulation`) sont des fonctions pures, indépendantes de l'UI et de la source de données. La récupération des prix passe par une interface `CryptoPriceProvider` — remplacer CoinGecko par une API interne ne change qu'un fichier.
+Principe directeur : **la logique métier ne touche jamais le JSX**. Les calculs (`lib/simulation`) sont des fonctions pures, indépendantes de l'UI et de la source de données. La récupération des prix passe par une interface `CryptoPriceProvider` — remplacer Kraken par une API interne ne change qu'un fichier.
 
 ---
 
@@ -96,12 +104,7 @@ npm run lint     # passe sans erreur
 npm run build    # passe sans erreur
 ```
 
-Variable d'environnement optionnelle (sinon fallback automatique) :
-
-```bash
-# .env.local
-COINGECKO_API_KEY=...   # clé démo CoinGecko, lue uniquement côté serveur
-```
+Aucune variable d'environnement requise : l'API publique Kraken ne nécessite pas de clé. En cas d'indisponibilité réseau, le fallback local prend automatiquement le relais.
 
 ---
 
@@ -111,7 +114,7 @@ Le simulateur est conçu pour être embarqué tel quel via iframe :
 
 ```html
 <iframe
-  src="https://VOTRE-DEMO.vercel.app/embed"
+  src="https://sinvestir-simulateur-crypto-tau.vercel.app/embed"
   width="100%"
   height="720"
   style="border:0; border-radius:16px;"
@@ -126,7 +129,7 @@ La route `/embed` rend le même composant sans header ni contexte de page : peu 
 ## Partis pris
 
 - Séparation stricte entre **UI**, **calculs** et **récupération des données** (SRP).
-- Source de prix et modes de calcul derrière des **interfaces** (`CryptoPriceProvider`, `SimulationStrategy`) : ouverts à l'extension, fermés à la modification (OCP/DIP). Remplacer CoinGecko ou ajouter un mode ne touche pas l'existant.
+- Source de prix et modes de calcul derrière des **interfaces** (`CryptoPriceProvider`, `SimulationStrategy`) : ouverts à l'extension, fermés à la modification (OCP/DIP). Remplacer Kraken ou ajouter un mode ne touche pas l'existant.
 - Composant principal réutilisable (`mode="full"` / `mode="embed"`).
 - **Validation systématique des entrées** (formulaire et route API), **secrets côté serveur uniquement**, embed contrôlé par `frame-ancestors`.
 - Fallback local pour garantir une démo fonctionnelle même API indisponible.
@@ -159,14 +162,3 @@ Pistes pensées pour la **suite de simulateurs**, au-delà du test :
 ## Avertissement
 
 Les résultats sont des **simulations rétrospectives** fondées sur des données historiques. Ils ne constituent ni une prévision, ni une recommandation d'investissement. Les crypto-actifs sont très volatils et comportent un risque de perte en capital. Les performances passées ne préjugent pas des performances futures.
-
-## Source des données
-
-Les prix historiques sont récupérés via l'API publique de Kraken
-(endpoint OHLC, paire XBT/EUR et ETH/EUR). CoinGecko Demo API a été
-évalué mais son tier gratuit ne couvre que les 365 derniers jours —
-insuffisant pour un backtesting sur plusieurs années. Kraken fournit
-un historique complet depuis 2018 sans authentification requise.
-
-Un fallback local (données hebdomadaires 2018→2026) garantit que la
-démo reste fonctionnelle même sans accès réseau.

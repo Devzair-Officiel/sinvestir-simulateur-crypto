@@ -43,7 +43,11 @@ export default function PerformanceChart({ timeline }: Props) {
   }
 
   return (
-    <div className="h-64 rounded-xl border border-white/6 bg-surface-soft p-4 sm:h-96">
+    <div
+      role="img"
+      aria-label="Graphique de performance : évolution de la valeur du portefeuille et du montant investi cumulé sur la période sélectionnée"
+      className="h-64 rounded-xl border border-white/6 bg-surface-soft p-4 sm:h-96"
+    >
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={timeline}>
           <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />

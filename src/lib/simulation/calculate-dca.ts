@@ -1,6 +1,5 @@
 import type {
   SimulationStrategy,
-  MarketPoint,
   TimelinePoint,
 } from '@/types/simulation';
 import { generatePaymentDates, findLastPointBefore } from './date-utils';

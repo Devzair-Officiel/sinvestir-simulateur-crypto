@@ -1,4 +1,4 @@
-import type { SimulationStrategy, MarketPoint } from '@/types/simulation';
+import type { SimulationStrategy } from '@/types/simulation';
 import { findLastPointBefore } from './date-utils';
 
 function isValidPrice(price: number): boolean {

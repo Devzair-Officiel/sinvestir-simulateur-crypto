@@ -80,10 +80,10 @@ Référence : règles dans CLAUDE.md, spec dans docs/INSTRUCTIONS_BUILD.md, char
 
 ## Phase 6 — Durcissement & qualité
 
-- [ ] A11y (labels, `aria-*`, contrastes)
-- [ ] `npm run lint` + `npm run build` + `npm test` verts
-- [ ] `npm audit`
-- [ ] README : URL réelle + snippet iframe
+- [x] A11y (labels, `aria-*`, contrastes)
+- [x] `npm run lint` + `npm run build` + `npm test` verts
+- [x] `npm audit` (2 vulnérabilités `moderate` postcss via Next — acceptables pour la démo)
+- [x] README : section « Source des données », snippet iframe — URL Vercel réelle en TODO
 
 ---
 
