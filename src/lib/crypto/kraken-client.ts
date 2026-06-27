@@ -7,7 +7,8 @@ import { ProviderError } from './provider';
 
 const KRAKEN_BASE = 'https://api.kraken.com/0/public/OHLC';
 const TIMEOUT_MS = 8_000;
-const INTERVAL_WEEKLY = 10080;
+const INTERVAL_WEEKLY = 10080; // minutes
+const INTERVAL_WEEKLY_SECONDS = INTERVAL_WEEKLY * 60;
 
 // ── Mapping CryptoId → paire Kraken ────────────────────────
 
@@ -49,7 +50,11 @@ export const krakenProvider: CryptoPriceProvider = {
       );
     }
 
-    const sinceSec = Math.floor(params.startDate.getTime() / 1000);
+    // since= est exclusif côté Kraken : on recule d'une semaine pour
+    // récupérer la chandelle d'ancrage (dernier point ≤ startDate).
+    // Le moteur lump-sum en a besoin pour fixer le prix d'achat.
+    const sinceSec =
+      Math.floor(params.startDate.getTime() / 1000) - INTERVAL_WEEKLY_SECONDS;
     const endMs = params.endDate.getTime();
 
     const url = `${KRAKEN_BASE}?pair=${pair}&interval=${INTERVAL_WEEKLY}&since=${sinceSec}`;

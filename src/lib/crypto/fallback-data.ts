@@ -919,8 +919,20 @@ export const fallbackProvider: CryptoPriceProvider = {
     const startTs = params.startDate.getTime();
     const endTs = params.endDate.getTime();
 
-    return series.filter(
+    const windowPoints = series.filter(
       (p) => p.timestamp >= startTs && p.timestamp <= endTs,
     );
+
+    // Ancrage : dernier point strictement antérieur à startTs. Permet au
+    // moteur lump-sum (et au 1er versement DCA) de trouver un prix d'achat
+    // à la date de début exacte, même si la série hebdo ne tombe pas dessus.
+    // Si un point == startTs, il est déjà dans la fenêtre — on ne préfixe pas.
+    let anchor: MarketPoint | null = null;
+    for (const p of series) {
+      if (p.timestamp >= startTs) break;
+      anchor = p;
+    }
+
+    return anchor ? [anchor, ...windowPoints] : windowPoints;
   },
 };

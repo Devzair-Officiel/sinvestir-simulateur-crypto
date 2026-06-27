@@ -19,7 +19,7 @@ Le rendu est pensé comme un **composant réutilisable**, prêt à vivre dans la
 
 | Choix | Raison |
 |---|---|
-| **Next.js 15 (App Router) + TypeScript strict** | Aligné sur votre stack interne ; reprise et intégration sans friction. |
+| **Next.js (App Router) + TypeScript strict** | Aligné sur votre stack interne ; reprise et intégration sans friction. |
 | **Tailwind CSS v4** | Tokens de design extraits directement du CSS live de `simulateurs.sinvestir.fr` → fidélité visuelle maîtrisée, pas approximée. |
 | **Vercel** | Déploiement natif Next.js, identique à vos simulateurs. Zéro configuration. |
 | **Kraken API (publique)** | Historique complet depuis 2018, sans clé. Source isolée derrière une interface — remplaçable sans toucher au reste. |
@@ -42,7 +42,7 @@ Un **fallback local** (données hebdomadaires 2018 → 2026 intégrées en dur) 
 
 ## Fonctionnalités
 
-- Sélection de la cryptomonnaie (BTC, ETH, SOL, BNB, XRP, ADA)
+- Sélection de la cryptomonnaie (BTC, ETH)
 - Versement unique **ou** DCA (hebdomadaire / mensuel)
 - Période personnalisée (date de début / fin, depuis janvier 2018)
 - Résultats : total investi, valeur finale, gain/perte (€ et %), nombre de versements, prix moyen d'achat, quantité accumulée
@@ -145,8 +145,8 @@ La route `/embed` rend le même composant sans header ni contexte de page. La CS
 ## Limites connues
 
 - Les données démarrent au 04/01/2018 (premier point Kraken hebdomadaire). Le formulaire borne la date de début en conséquence.
-- Couverture Kraken : BTC et ETH uniquement en données live. Les autres cryptos (SOL, BNB, XRP, ADA) sont proposées dans le formulaire mais basculent sur le fallback local — qui ne couvre que BTC/ETH, donc retournent une erreur pédagogique. Extensible via le mapping de paires Kraken.
-- Données hebdomadaires (non journalières) : la granularité Kraken free tier est 1 semaine. Suffisant pour un DCA mensuel ; le DCA quotidien donne des résultats approximatifs.
+- La couverture live est volontairement limitée à BTC et ETH pour garantir une démo fiable dans le temps imparti. Les autres actifs peuvent être ajoutés via le mapping provider sans modifier la logique métier.
+- Données hebdomadaires (non journalières) : la granularité Kraken free tier est 1 semaine. Suffisant pour un DCA hebdomadaire ou mensuel.
 - Les résultats sont des simulations rétrospectives, non prédictives.
 
 ---

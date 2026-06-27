@@ -87,7 +87,7 @@ describe('krakenProvider', () => {
     expect(result[0]).toEqual({ timestamp: 1704067200000, price: 2250 });
   });
 
-  it(`construit l'URL avec pair, interval=10080 et since en secondes`, async () => {
+  it(`construit l'URL avec pair, interval=10080 et since reculé d'une semaine`, async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(VALID_RESPONSE), { status: 200 }),
     );
@@ -101,8 +101,9 @@ describe('krakenProvider', () => {
     const calledUrl = vi.mocked(fetch).mock.calls[0][0] as string;
     expect(calledUrl).toContain('pair=XXBTZEUR');
     expect(calledUrl).toContain('interval=10080');
-    // 2024-01-01T00:00:00Z = 1704067200
-    expect(calledUrl).toContain('since=1704067200');
+    // since= est exclusif côté Kraken : reculé d'une semaine pour capturer
+    // la chandelle d'ancrage. 2024-01-01 = 1704067200, -604800s = 1703462400.
+    expect(calledUrl).toContain('since=1703462400');
   });
 
   it('filtre les points au-delà de endDate', async () => {

@@ -56,10 +56,13 @@ describe('fallbackProvider', () => {
       startDate: utc('2024-01-01'),
       endDate: utc('2024-12-31'),
     });
-    expect(result.length).toBeGreaterThan(40); // ~52 semaines
-    for (const p of result) {
-      expect(p.timestamp).toBeGreaterThanOrEqual(utc('2024-01-01').getTime());
-      expect(p.timestamp).toBeLessThanOrEqual(utc('2024-12-31').getTime());
+    expect(result.length).toBeGreaterThan(40); // ~52 semaines + ancrage
+    // Le premier point peut être un ancrage strictement antérieur à startDate.
+    // Tous les autres points sont dans la fenêtre.
+    expect(result[0].timestamp).toBeLessThanOrEqual(utc('2024-12-31').getTime());
+    for (let i = 1; i < result.length; i++) {
+      expect(result[i].timestamp).toBeGreaterThanOrEqual(utc('2024-01-01').getTime());
+      expect(result[i].timestamp).toBeLessThanOrEqual(utc('2024-12-31').getTime());
     }
   });
 
@@ -72,19 +75,55 @@ describe('fallbackProvider', () => {
     expect(result.length).toBeGreaterThan(40);
   });
 
-  it('filtre correctement par plage de dates', async () => {
+  it('filtre correctement par plage de dates (+ ancrage)', async () => {
     const result = await fallbackProvider.getMarketChart({
       cryptoId: 'bitcoin',
       startDate: utc('2020-06-01'),
       endDate: utc('2020-06-30'),
     });
-    // Juin 2020 = ~4 semaines de données
-    expect(result.length).toBeGreaterThanOrEqual(3);
-    expect(result.length).toBeLessThanOrEqual(5);
-    for (const p of result) {
-      expect(p.timestamp).toBeGreaterThanOrEqual(utc('2020-06-01').getTime());
-      expect(p.timestamp).toBeLessThanOrEqual(utc('2020-06-30').getTime());
+    // Juin 2020 = ~4 semaines de données + 1 ancrage hors fenêtre
+    expect(result.length).toBeGreaterThanOrEqual(4);
+    expect(result.length).toBeLessThanOrEqual(6);
+    // Le premier point peut être l'ancrage (timestamp < startDate)
+    expect(result[0].timestamp).toBeLessThanOrEqual(utc('2020-06-30').getTime());
+    for (let i = 1; i < result.length; i++) {
+      expect(result[i].timestamp).toBeGreaterThanOrEqual(utc('2020-06-01').getTime());
+      expect(result[i].timestamp).toBeLessThanOrEqual(utc('2020-06-30').getTime());
     }
+  });
+
+  it('ancrage : préfixe le dernier point ≤ startDate hors fenêtre', async () => {
+    // 2020-01-01 (mercredi) — pas de point hebdo dessus.
+    // Série hebdo alignée jeudi : ancrage attendu = 2019-12-26 (1577318400000, 6401.1 €).
+    const result = await fallbackProvider.getMarketChart({
+      cryptoId: 'bitcoin',
+      startDate: utc('2020-01-01'),
+      endDate: utc('2020-01-31'),
+    });
+    expect(result[0]).toEqual({ timestamp: 1577318400000, price: 6401.1 });
+    expect(result[0].timestamp).toBeLessThan(utc('2020-01-01').getTime());
+  });
+
+  it('startDate pile sur un point : pas de doublon, ancrage = ce point', async () => {
+    // 2018-01-04 (premier point exact de la série BTC).
+    const result = await fallbackProvider.getMarketChart({
+      cryptoId: 'bitcoin',
+      startDate: utc('2018-01-04'),
+      endDate: utc('2018-02-01'),
+    });
+    const matches = result.filter((p) => p.timestamp === utc('2018-01-04').getTime());
+    expect(matches).toHaveLength(1);
+    expect(result[0].timestamp).toBe(utc('2018-01-04').getTime());
+  });
+
+  it('startDate avant le tout premier point : pas d\'ancrage, série tronquée', async () => {
+    // 2017-12-01 — antérieur au premier point (2018-01-04).
+    const result = await fallbackProvider.getMarketChart({
+      cryptoId: 'bitcoin',
+      startDate: utc('2017-12-01'),
+      endDate: utc('2018-01-31'),
+    });
+    expect(result[0].timestamp).toBe(utc('2018-01-04').getTime());
   });
 
   it('tous les prix sont des nombres finis positifs', () => {

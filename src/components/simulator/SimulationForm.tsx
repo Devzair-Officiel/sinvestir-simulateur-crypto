@@ -2,8 +2,12 @@
 
 import { useState } from 'react';
 import { z } from 'zod';
-import { CRYPTO_IDS } from '@/types/simulation';
 import type { CryptoId, InvestmentMode, DcaFrequency } from '@/types/simulation';
+
+// Sous-ensemble exposé dans l'UI. L'allowlist Zod (types/simulation.ts)
+// reste plus large pour rester extensible côté provider sans toucher au form.
+const UI_CRYPTO_IDS = ['bitcoin', 'ethereum'] as const satisfies readonly CryptoId[];
+const UI_FREQUENCIES = ['weekly', 'monthly'] as const satisfies readonly DcaFrequency[];
 
 // ── Types exportés ─────────────────────────────────────────
 
@@ -18,17 +22,12 @@ export interface FormValues {
 
 // ── Constantes ─────────────────────────────────────────────
 
-const CRYPTO_LABELS: Record<CryptoId, string> = {
+const CRYPTO_LABELS: Record<(typeof UI_CRYPTO_IDS)[number], string> = {
   bitcoin: 'Bitcoin (BTC)',
   ethereum: 'Ethereum (ETH)',
-  solana: 'Solana (SOL)',
-  binancecoin: 'BNB',
-  ripple: 'XRP',
-  cardano: 'Cardano (ADA)',
 };
 
-const FREQ_LABELS: Record<DcaFrequency, string> = {
-  daily: 'Quotidien',
+const FREQ_LABELS: Record<(typeof UI_FREQUENCIES)[number], string> = {
   weekly: 'Hebdomadaire',
   monthly: 'Mensuel',
 };
@@ -48,10 +47,10 @@ const DEFAULTS: FormValues = {
 
 const FormSchema = z
   .object({
-    cryptoId: z.enum(CRYPTO_IDS),
+    cryptoId: z.enum(UI_CRYPTO_IDS),
     mode: z.enum(['lump-sum', 'dca'] as const),
     amount: z.number().finite().positive('Le montant doit être supérieur à 0'),
-    frequency: z.enum(['daily', 'weekly', 'monthly'] as const),
+    frequency: z.enum(UI_FREQUENCIES),
     startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date invalide'),
     endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date invalide'),
   })
@@ -103,7 +102,7 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-ink-muted">Cryptomonnaie</span>
         <select value={form.cryptoId} onChange={(e) => set('cryptoId', e.target.value as CryptoId)} className={INPUT}>
-          {CRYPTO_IDS.map((id) => <option key={id} value={id}>{CRYPTO_LABELS[id]}</option>)}
+          {UI_CRYPTO_IDS.map((id) => <option key={id} value={id}>{CRYPTO_LABELS[id]}</option>)}
         </select>
       </label>
 
@@ -139,7 +138,7 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
         <span className="text-xs font-medium text-ink-muted">Fréquence</span>
         <select value={form.frequency} onChange={(e) => set('frequency', e.target.value as DcaFrequency)}
           disabled={isLump} className={INPUT}>
-          {(['daily', 'weekly', 'monthly'] as const).map((v) => (
+          {UI_FREQUENCIES.map((v) => (
             <option key={v} value={v}>{FREQ_LABELS[v]}</option>
           ))}
         </select>
