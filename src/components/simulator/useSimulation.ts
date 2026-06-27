@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { FormValues } from './SimulationForm';
-import type { CryptoId, InvestmentMode, MarketPoint, SimulationResult } from '@/types/simulation';
+import type { CryptoId, DcaFrequency, InvestmentMode, MarketPoint, SimulationResult } from '@/types/simulation';
 import { toUTCMidnight } from '@/lib/simulation/date-utils';
 import { dcaStrategy } from '@/lib/simulation/calculate-dca';
 import { lumpSumStrategy } from '@/lib/simulation/calculate-lump-sum';
@@ -10,6 +10,7 @@ import { lumpSumStrategy } from '@/lib/simulation/calculate-lump-sum';
 export interface SubmittedParams {
   cryptoId: CryptoId;
   mode: InvestmentMode;
+  frequency: DcaFrequency;
   startDate: string;
   endDate: string;
 }
@@ -81,7 +82,13 @@ export function useSimulation() {
     setState({
       phase: 'success',
       result,
-      lastParams: { cryptoId: fv.cryptoId, mode: fv.mode, startDate: fv.startDate, endDate: fv.endDate },
+      lastParams: {
+        cryptoId: fv.cryptoId,
+        mode: fv.mode,
+        frequency: fv.frequency,
+        startDate: fv.startDate,
+        endDate: fv.endDate,
+      },
     });
   }, []);
 

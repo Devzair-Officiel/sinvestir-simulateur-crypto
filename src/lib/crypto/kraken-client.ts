@@ -8,7 +8,7 @@ import { ProviderError } from './provider';
 const KRAKEN_BASE = 'https://api.kraken.com/0/public/OHLC';
 const TIMEOUT_MS = 8_000;
 const INTERVAL_WEEKLY = 10080; // minutes
-const INTERVAL_WEEKLY_SECONDS = INTERVAL_WEEKLY * 60;
+const INTERVAL_WEEKLY_SECONDS = INTERVAL_WEEKLY * 60; // 604 800 s
 
 // ── Mapping CryptoId → paire Kraken ────────────────────────
 
@@ -51,13 +51,13 @@ export const krakenProvider: CryptoPriceProvider = {
     }
 
     // since= est exclusif côté Kraken : on recule d'une semaine pour
-    // récupérer la chandelle d'ancrage (dernier point ≤ startDate).
-    // Le moteur lump-sum en a besoin pour fixer le prix d'achat.
-    const sinceSec =
+    // récupérer la chandelle d'ancrage (dernier point ≤ startDate). Le
+    // moteur lump-sum en a besoin pour fixer le prix d'achat.
+    const since =
       Math.floor(params.startDate.getTime() / 1000) - INTERVAL_WEEKLY_SECONDS;
     const endMs = params.endDate.getTime();
 
-    const url = `${KRAKEN_BASE}?pair=${pair}&interval=${INTERVAL_WEEKLY}&since=${sinceSec}`;
+    const url = `${KRAKEN_BASE}?pair=${pair}&interval=${INTERVAL_WEEKLY}&since=${since}`;
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -87,15 +87,11 @@ export const krakenProvider: CryptoPriceProvider = {
       );
     }
 
-    // Parse + validate envelope
     let body: unknown;
     try {
       body = await response.json();
     } catch {
-      throw new ProviderError(
-        'invalid-response',
-        'Réponse Kraken non-JSON.',
-      );
+      throw new ProviderError('invalid-response', 'Réponse Kraken non-JSON.');
     }
 
     const envelope = KrakenResponseSchema.safeParse(body);
@@ -113,7 +109,6 @@ export const krakenProvider: CryptoPriceProvider = {
       );
     }
 
-    // Extract pair data from result
     const pairData = envelope.data.result[pair];
     if (!pairData) {
       throw new ProviderError(
@@ -122,7 +117,6 @@ export const krakenProvider: CryptoPriceProvider = {
       );
     }
 
-    // Validate rows
     const rows = z.array(KrakenOhlcRowSchema).safeParse(pairData);
     if (!rows.success) {
       throw new ProviderError(
@@ -131,13 +125,11 @@ export const krakenProvider: CryptoPriceProvider = {
       );
     }
 
-    // Transform: close (index 4) → price, time * 1000 → timestamp
-    // Filter by endDate (Kraken since= is a "since" param, may return beyond range)
-    return rows.data
-      .filter((row) => row[0] * 1000 <= endMs)
-      .map((row) => ({
-        timestamp: row[0] * 1000,
-        price: parseFloat(row[4]),
-      }));
+    const points: MarketPoint[] = rows.data.map((row) => ({
+      timestamp: row[0] * 1000,
+      price: parseFloat(row[4]),
+    }));
+
+    return points.filter((p) => p.timestamp <= endMs);
   },
 };

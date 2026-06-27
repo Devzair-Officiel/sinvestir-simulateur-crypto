@@ -120,16 +120,24 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
         <span className="text-xs font-medium text-ink-muted">
           {isLump ? 'Montant total (€)' : 'Montant par versement (€)'}
         </span>
-        <input
-          type="number"
-          min={1}
-          step="any"
-          value={Number.isNaN(form.amount) ? '' : form.amount}
-          onChange={(e) => set('amount', e.target.valueAsNumber)}
-          placeholder="100"
-          aria-invalid={!!errors.amount || undefined}
-          className={INPUT}
-        />
+        <div className="relative">
+          <input
+            type="number"
+            min={1}
+            step="any"
+            value={Number.isNaN(form.amount) ? '' : form.amount}
+            onChange={(e) => set('amount', e.target.valueAsNumber)}
+            placeholder="100"
+            aria-invalid={!!errors.amount || undefined}
+            className={`${INPUT} pr-9`}
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-ink-muted"
+          >
+            €
+          </span>
+        </div>
         {errors.amount && <span className="text-xs text-red-400">{errors.amount}</span>}
       </label>
 

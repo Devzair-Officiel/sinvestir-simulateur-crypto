@@ -101,8 +101,8 @@ describe('krakenProvider', () => {
     const calledUrl = vi.mocked(fetch).mock.calls[0][0] as string;
     expect(calledUrl).toContain('pair=XXBTZEUR');
     expect(calledUrl).toContain('interval=10080');
-    // since= est exclusif côté Kraken : reculé d'une semaine pour capturer
-    // la chandelle d'ancrage. 2024-01-01 = 1704067200, -604800s = 1703462400.
+    // since= est exclusif côté Kraken : reculé d'une semaine (604 800 s) pour
+    // capturer la chandelle d'ancrage. 2024-01-01 = 1704067200, -604800 = 1703462400.
     expect(calledUrl).toContain('since=1703462400');
   });
 

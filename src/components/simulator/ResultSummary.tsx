@@ -1,4 +1,4 @@
-import type { CryptoId, InvestmentMode, SimulationResult } from '@/types/simulation';
+import type { CryptoId, DcaFrequency, InvestmentMode, SimulationResult } from '@/types/simulation';
 import { formatCurrency, formatPercent } from '@/lib/simulation/format-money';
 
 // ── Props ──────────────────────────────────────────────────
@@ -7,6 +7,7 @@ interface Props {
   result: SimulationResult & { status: 'success' };
   cryptoId: CryptoId;
   mode: InvestmentMode;
+  frequency: DcaFrequency;
   startDate: string;
   endDate: string;
 }
@@ -29,16 +30,32 @@ function fmtDate(iso: string): string {
   });
 }
 
+// Libellé unité pour le compte de versements selon le mode/fréquence.
+// "78 mois", "443 semaines", ou "versement unique" pour le lump-sum.
+function paymentsLabel(
+  mode: InvestmentMode,
+  frequency: DcaFrequency,
+  count: number,
+): string {
+  if (mode === 'lump-sum') return 'versement unique';
+  switch (frequency) {
+    case 'weekly':  return `${count} semaines`;
+    case 'monthly': return `${count} mois`;
+    case 'daily':   return `${count} jours`;
+  }
+}
+
 // ── Composant ──────────────────────────────────────────────
 
-export default function ResultSummary({ result, cryptoId, mode, startDate, endDate }: Props) {
+export default function ResultSummary({ result, cryptoId, mode, frequency, startDate, endDate }: Props) {
   const r = result;
   const positive = r.gainLoss >= 0;
   const colorCls = positive ? 'text-accent' : 'text-orange-400';
+  const periodLabel = paymentsLabel(mode, frequency, r.paymentCount);
 
   const narrative =
     mode === 'dca'
-      ? `En investissant ${formatCurrency(r.totalInvested / r.paymentCount)} par versement en ${CRYPTO_NAMES[cryptoId]} de ${fmtDate(startDate)} à ${fmtDate(endDate)}, votre portefeuille vaudrait ${formatCurrency(r.finalValue)}.`
+      ? `En investissant ${formatCurrency(r.totalInvested)} en ${CRYPTO_NAMES[cryptoId]} en ${periodLabel} (de ${fmtDate(startDate)} à ${fmtDate(endDate)}), votre portefeuille vaudrait ${formatCurrency(r.finalValue)}.`
       : `En investissant ${formatCurrency(r.totalInvested)} en ${CRYPTO_NAMES[cryptoId]} en ${fmtDate(startDate)}, votre portefeuille vaudrait ${formatCurrency(r.finalValue)} en ${fmtDate(endDate)}.`;
 
   const kpis: { label: string; value: string; color?: string }[] = [
@@ -46,7 +63,7 @@ export default function ResultSummary({ result, cryptoId, mode, startDate, endDa
     { label: 'Valeur finale', value: formatCurrency(r.finalValue) },
     { label: 'Gain / Perte', value: `${positive ? '+' : ''}${formatCurrency(r.gainLoss)}`, color: colorCls },
     { label: 'Performance', value: `${positive ? '+' : ''}${formatPercent(r.performance)}`, color: colorCls },
-    { label: 'Nb. versements', value: String(r.paymentCount) },
+    { label: 'Versements', value: periodLabel },
     { label: 'Prix moyen d\u2019achat', value: formatCurrency(r.averageBuyPrice) },
   ];
 
