@@ -90,8 +90,15 @@ export const dcaStrategy: SimulationStrategy<'dca'> = {
     }
 
     // ── Résultat ────────────────────────────────────────────
+    // Valeur finale calculée sur le dernier prix connu avant endDate,
+    // symétrique au lump-sum. Indépendant de la timeline (qui peut être
+    // vide ou tronquée si endDate dépasse le dernier point de données).
+    const finalPoint = findLastPointBefore(prices, endTs);
+    const lastKnownPrice = finalPoint?.price;
     const finalValue =
-      timeline.length > 0 ? timeline[timeline.length - 1].value : 0;
+      lastKnownPrice != null && isValidPrice(lastKnownPrice)
+        ? totalQuantity * lastKnownPrice
+        : 0;
     const gainLoss = finalValue - totalInvested;
     const performance = totalInvested !== 0 ? gainLoss / totalInvested : 0;
     const averageBuyPrice =

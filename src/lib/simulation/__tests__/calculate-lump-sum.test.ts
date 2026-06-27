@@ -117,6 +117,28 @@ describe('lumpSumStrategy', () => {
     });
   });
 
+  // Comportement produit volontaire : pas de "premier prix après" implicite,
+  // qui créerait un achat fantôme silencieux dans un trou de données.
+  // Le formulaire borne min="2018-01-04" pour que ce cas ne se présente
+  // pas en pratique, mais le moteur reste strict pour les appels directs.
+  it('startDate sans prix disponible → erreur explicite (comportement voulu)', () => {
+    const prices: MarketPoint[] = [
+      { timestamp: utc('2018-01-04').getTime(), price: 12399 },
+      { timestamp: utc('2018-01-11').getTime(), price: 9250 },
+    ];
+    const result = lumpSumStrategy.run(
+      makeParams({
+        startDate: utc('2018-01-01'),
+        endDate: utc('2018-01-11'),
+      }),
+      prices,
+    );
+    expect(result).toMatchObject({
+      status: 'error',
+      code: 'no-price-data',
+    });
+  });
+
   it('endDate < startDate → erreur invalid-date-range', () => {
     const prices: MarketPoint[] = [
       { timestamp: utc('2024-01-01').getTime(), price: 100 },

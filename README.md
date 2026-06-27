@@ -144,6 +144,7 @@ La route `/embed` rend le même composant sans header ni contexte de page. La CS
 
 ## Limites connues
 
+- Les données démarrent au 04/01/2018 (premier point Kraken hebdomadaire). Le formulaire borne la date de début en conséquence.
 - Couverture Kraken : BTC et ETH uniquement en données live. Les autres cryptos (SOL, BNB, XRP, ADA) sont proposées dans le formulaire mais basculent sur le fallback local — qui ne couvre que BTC/ETH, donc retournent une erreur pédagogique. Extensible via le mapping de paires Kraken.
 - Données hebdomadaires (non journalières) : la granularité Kraken free tier est 1 semaine. Suffisant pour un DCA mensuel ; le DCA quotidien donne des résultats approximatifs.
 - Les résultats sont des simulations rétrospectives, non prédictives.
@@ -152,11 +153,12 @@ La route `/embed` rend le même composant sans header ni contexte de page. La CS
 
 ## Améliorations proposées
 
-Pistes orientées métier pour la suite :
+Pistes orientées métier pour la suite, formulées sans présumer de ce qui existe déjà côté interne.
 
-- **Design system commun** : mutualiser cards, inputs, graphiques et disclaimers entre tous les simulateurs pour une cohérence et une vélocité accrues.
-- **Moteur de simulation partagé** : intérêts composés, DCA, inflation, frais, crédit, crypto derrière une même interface de calcul — testée et réutilisable sur toute la suite.
-- **Tracking d'usage + capture de lead** : taux de complétion, paramètres les plus utilisés, clics CTA → dashboard de pilotage ; en option, capture email vers HubSpot pour transformer l'audience des simulateurs en leads mesurables.
+- **Capture de lead sur les simulateurs.** Le simulateur crypto d'origine (sur WordPress) ne capture aucun contact. Une option « recevez le rapport de votre simulation » branchée sur votre CRM (HubSpot) transformerait l'audience des simulateurs en leads mesurables, sans dégrader l'UX. C'est l'amélioration la plus directement liée à votre modèle de média.
+- **Tracking d'usage.** Mesurer le taux de complétion, les paramètres les plus saisis et les clics CTA alimenterait un dashboard de pilotage — utile pour prioriser les évolutions de la suite.
+- **Mutualisation, si ce n'est pas déjà en place.** Votre suite a déjà une forte cohérence visuelle ; si un design system et un moteur de calcul communs (intérêts composés, DCA, inflation, frais, crédit, crypto) ne sont pas encore formalisés, les centraliser derrière une interface unique accélérerait l'ajout de nouveaux simulateurs. Ce projet est déjà structuré dans cet esprit (provider et stratégies derrière des interfaces).
+- **Prix spot temps réel (optionnel).** Pour les simulations se terminant à la date du jour, le ticker Kraken (`/0/public/Ticker`) ou son WebSocket permettrait de valoriser au prix de la minute plutôt qu'au dernier point hebdomadaire — et d'afficher un cours en direct en en-tête. Volontairement hors périmètre du MVP (backtesting historique).
 
 ---
 

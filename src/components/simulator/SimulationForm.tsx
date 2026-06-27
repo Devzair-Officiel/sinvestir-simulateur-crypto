@@ -148,7 +148,7 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
       {/* Date de début */}
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-ink-muted">Date de début</span>
-        <input type="date" min="2018-01-01" max={form.endDate} value={form.startDate}
+        <input type="date" min="2018-01-04" max={form.endDate} value={form.startDate}
           onChange={(e) => set('startDate', e.target.value)} aria-invalid={!!errors.startDate || undefined} className={INPUT} />
         {errors.startDate && <span className="text-xs text-red-400">{errors.startDate}</span>}
       </label>
