@@ -12,6 +12,9 @@ export type CryptoId = (typeof CRYPTO_IDS)[number];
 
 // ── Modes & fréquences ──────────────────────────────────────
 export type InvestmentMode = 'lump-sum' | 'dca';
+// 'daily' supporté par le moteur — UI désactivée
+// (données Kraken hebdomadaires insuffisantes pour du daily précis)
+// Activable via une source journalière future (Binance, snapshot)
 export type DcaFrequency = 'daily' | 'weekly' | 'monthly';
 
 // ── Données de marché ───────────────────────────────────────

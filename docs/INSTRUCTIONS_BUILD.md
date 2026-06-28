@@ -53,7 +53,7 @@ Reporter dans `tailwind.config.ts` (`theme.extend.colors / fontFamily / borderRa
 `types/simulation.ts` :
 
 ```ts
-export type Frequency = "once" | "daily" | "weekly" | "monthly";
+export type Frequency = "once" | "daily" | "weekly" | "monthly"; // daily : supporté moteur, retiré de l'UI (voir CLAUDE.md)
 export type CryptoId = "bitcoin" | "ethereum" | "solana" | "binancecoin" | "ripple" | "cardano";
 
 export interface SimulationParams {
