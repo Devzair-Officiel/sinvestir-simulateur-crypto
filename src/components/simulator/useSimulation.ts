@@ -5,6 +5,23 @@ import { toUTCMidnight } from '@/lib/simulation/date-utils';
 import { dcaStrategy } from '@/lib/simulation/calculate-dca';
 import { lumpSumStrategy } from '@/lib/simulation/calculate-lump-sum';
 
+// ── Messages d'erreur ──────────────────────────────────────
+
+// Date du premier point disponible par série (fallback hebdomadaire).
+// Utilisé pour informer l'utilisateur quand sa plage est antérieure aux
+// données dont on dispose réellement.
+const DATA_START_LABEL: Partial<Record<CryptoId, string>> = {
+  bitcoin: 'le 5 septembre 2013',
+  ethereum: 'le 6 août 2015',
+};
+
+function noPriceDataMessage(cryptoId: CryptoId): string {
+  const label = DATA_START_LABEL[cryptoId];
+  return label
+    ? `Aucune donnée de prix disponible pour cette période. Les données démarrent ${label}.`
+    : 'Aucune donnée de prix disponible pour cette période.';
+}
+
 // ── Types d'état ───────────────────────────────────────────
 
 export interface SubmittedParams {
@@ -74,7 +91,7 @@ export function useSimulation() {
       const msg =
         result.code === 'invalid-date-range'
           ? 'La plage de dates est invalide.'
-          : 'Aucune donnée de prix disponible pour cette période.';
+          : noPriceDataMessage(fv.cryptoId);
       setState({ phase: 'error', message: msg });
       return;
     }

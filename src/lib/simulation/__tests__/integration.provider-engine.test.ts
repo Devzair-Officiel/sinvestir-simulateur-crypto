@@ -57,9 +57,9 @@ describe('Intégration provider fallback → moteur lump-sum', () => {
     expect(result.performance).toBeGreaterThan(0);
   });
 
-  it('BTC startDate = 2018-01-04 (premier point exact) : ancrage = ce point', async () => {
-    const startDate = utc('2018-01-04');
-    const endDate = utc('2018-03-01');
+  it('BTC startDate = 2013-09-05 (premier point exact) : ancrage = ce point', async () => {
+    const startDate = utc('2013-09-05');
+    const endDate = utc('2013-10-31');
 
     const prices = await fallbackProvider.getMarketChart({
       cryptoId: 'bitcoin',
@@ -85,7 +85,7 @@ describe('Intégration provider fallback → moteur lump-sum', () => {
 
     expect(result.status).toBe('success');
     if (result.status !== 'success') return;
-    expect(result.averageBuyPrice).toBe(12399); // prix du 2018-01-04
+    expect(result.averageBuyPrice).toBe(96.7); // prix du 2013-09-05
   });
 });
 

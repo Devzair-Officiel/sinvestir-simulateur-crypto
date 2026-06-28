@@ -144,7 +144,7 @@ La route `/embed` rend le même composant sans header ni contexte de page. La CS
 
 ## Limites connues
 
-- Les données démarrent au 04/01/2018 (premier point Kraken hebdomadaire). Le formulaire borne la date de début en conséquence.
+- Les données historiques BTC démarrent en septembre 2013, ETH en août 2015. Le formulaire borne la date de début sur la plus tardive des deux (06/08/2015) pour garantir une couverture identique quelle que soit la crypto choisie. Couverture live (Kraken) et fallback alignées.
 - La couverture live est volontairement limitée à BTC et ETH pour garantir une démo fiable dans le temps imparti. Les autres actifs peuvent être ajoutés via le mapping provider sans modifier la logique métier.
 - Données hebdomadaires uniquement. L'endpoint OHLC public Kraken plafonne à 720 chandelles d'historique, ce qui permet de couvrir ~14 ans en hebdomadaire mais seulement ~2 ans en quotidien — insuffisant pour la plage 2018→aujourd'hui visée par le simulateur. Suffisant pour un DCA hebdomadaire ou mensuel.
 - DCA quotidien désactivé pour la même raison. Activer cette fréquence nécessite une source de données journalières historiques : clé API payante (Kraken Pro, CoinGecko Demo+, etc.) ou snapshot embarqué dans le repo.

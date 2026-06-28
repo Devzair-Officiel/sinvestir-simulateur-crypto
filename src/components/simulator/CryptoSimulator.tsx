@@ -24,9 +24,23 @@ export default function CryptoSimulator({ mode }: Props) {
 
         <div className="flex min-h-[200px] items-start">
           {state.phase === 'idle' && (
-            <p className="self-center text-sm text-ink-muted">
-              Renseignez les paramètres et lancez la simulation.
-            </p>
+            <div className="flex w-full flex-col gap-4 self-center">
+              <p className="text-sm text-ink-muted">
+                Renseignez les paramètres et lancez la simulation.
+              </p>
+              <div className="rounded-lg border border-white/6 bg-surface-soft p-4 text-sm text-ink-muted">
+                <p className="mb-3 font-medium text-ink">📊 Données disponibles</p>
+                <dl className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1.5">
+                  <dt>Bitcoin (BTC)</dt>
+                  <dd>depuis sept. 2013</dd>
+                  <dt>Ethereum (ETH)</dt>
+                  <dd>depuis août 2015</dd>
+                </dl>
+                <p className="mt-3 border-t border-white/6 pt-3 text-xs text-ink-faint">
+                  Source : Kraken OHLC hebdomadaire
+                </p>
+              </div>
+            </div>
           )}
 
           {state.phase === 'loading' && (

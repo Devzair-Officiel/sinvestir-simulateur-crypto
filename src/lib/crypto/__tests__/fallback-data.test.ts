@@ -32,22 +32,22 @@ describe('fallbackProvider', () => {
     }
   });
 
-  it('BTC_EUR_WEEKLY contient 442 entrées (jan 2018 → juin 2026)', () => {
-    expect(BTC_EUR_WEEKLY.length).toBe(442);
-    // Première entrée : 2018-01-04
-    expect(BTC_EUR_WEEKLY[0].timestamp).toBe(1515024000000);
-    expect(BTC_EUR_WEEKLY[0].price).toBe(12399);
-    // Dernière entrée : 2026-06-18
-    expect(BTC_EUR_WEEKLY[441].timestamp).toBe(1781740800000);
+  it('BTC_EUR_WEEKLY contient 669 entrées (sept 2013 → juin 2026)', () => {
+    expect(BTC_EUR_WEEKLY.length).toBe(669);
+    // Première entrée : 2013-09-05
+    expect(BTC_EUR_WEEKLY[0].timestamp).toBe(1378339200000);
+    expect(BTC_EUR_WEEKLY[0].price).toBe(96.7);
+    // Dernière entrée : 2026-06-25
+    expect(BTC_EUR_WEEKLY[668].timestamp).toBe(1782345600000);
   });
 
-  it('ETH_EUR_WEEKLY contient 442 entrées (jan 2018 → juin 2026)', () => {
-    expect(ETH_EUR_WEEKLY.length).toBe(442);
-    // Première entrée : 2018-01-04
-    expect(ETH_EUR_WEEKLY[0].timestamp).toBe(1515024000000);
-    expect(ETH_EUR_WEEKLY[0].price).toBe(1031.03);
-    // Dernière entrée : 2026-06-18
-    expect(ETH_EUR_WEEKLY[441].timestamp).toBe(1781740800000);
+  it('ETH_EUR_WEEKLY contient 569 entrées (août 2015 → juin 2026)', () => {
+    expect(ETH_EUR_WEEKLY.length).toBe(569);
+    // Première entrée : 2015-08-06
+    expect(ETH_EUR_WEEKLY[0].timestamp).toBe(1438819200000);
+    expect(ETH_EUR_WEEKLY[0].price).toBe(1.09);
+    // Dernière entrée : 2026-06-25
+    expect(ETH_EUR_WEEKLY[568].timestamp).toBe(1782345600000);
   });
 
   it('bitcoin retourne des données pour 2024', async () => {
@@ -105,25 +105,25 @@ describe('fallbackProvider', () => {
   });
 
   it('startDate pile sur un point : pas de doublon, ancrage = ce point', async () => {
-    // 2018-01-04 (premier point exact de la série BTC).
+    // 2013-09-05 (premier point exact de la série BTC).
     const result = await fallbackProvider.getMarketChart({
       cryptoId: 'bitcoin',
-      startDate: utc('2018-01-04'),
-      endDate: utc('2018-02-01'),
+      startDate: utc('2013-09-05'),
+      endDate: utc('2013-10-31'),
     });
-    const matches = result.filter((p) => p.timestamp === utc('2018-01-04').getTime());
+    const matches = result.filter((p) => p.timestamp === utc('2013-09-05').getTime());
     expect(matches).toHaveLength(1);
-    expect(result[0].timestamp).toBe(utc('2018-01-04').getTime());
+    expect(result[0].timestamp).toBe(utc('2013-09-05').getTime());
   });
 
   it('startDate avant le tout premier point : pas d\'ancrage, série tronquée', async () => {
-    // 2017-12-01 — antérieur au premier point (2018-01-04).
+    // 2013-01-01 — antérieur au premier point (2013-09-05).
     const result = await fallbackProvider.getMarketChart({
       cryptoId: 'bitcoin',
-      startDate: utc('2017-12-01'),
-      endDate: utc('2018-01-31'),
+      startDate: utc('2013-01-01'),
+      endDate: utc('2013-10-31'),
     });
-    expect(result[0].timestamp).toBe(utc('2018-01-04').getTime());
+    expect(result[0].timestamp).toBe(utc('2013-09-05').getTime());
   });
 
   it('tous les prix sont des nombres finis positifs', () => {

@@ -34,6 +34,28 @@ const FREQ_LABELS: Record<(typeof UI_FREQUENCIES)[number], string> = {
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
+// Premier point disponible (Kraken hebdomadaire) par crypto. Sert à borner
+// dynamiquement le champ « date de début » selon la crypto sélectionnée.
+const CRYPTO_START_DATES: Record<CryptoId, string> = {
+  bitcoin:     '2013-09-05', // premier point Kraken BTC/EUR
+  ethereum:    '2015-08-06', // premier point Kraken ETH/EUR
+  solana:      '2015-08-06',
+  binancecoin: '2015-08-06',
+  ripple:      '2015-08-06',
+  cardano:     '2015-08-06',
+};
+
+// Libellés pour le message d'erreur inline quand la date de début est
+// antérieure aux données disponibles. Le format date est en français lisible.
+const CRYPTO_START_LABELS: Record<CryptoId, { label: string; date: string }> = {
+  bitcoin:     { label: 'Bitcoin',  date: '5 septembre 2013' },
+  ethereum:    { label: 'Ethereum', date: '6 août 2015' },
+  solana:      { label: 'Solana',   date: '6 août 2015' },
+  binancecoin: { label: 'BNB',      date: '6 août 2015' },
+  ripple:      { label: 'XRP',      date: '6 août 2015' },
+  cardano:     { label: 'Cardano',  date: '6 août 2015' },
+};
+
 const DEFAULTS: FormValues = {
   cryptoId: 'bitcoin',
   mode: 'dca',
@@ -57,6 +79,16 @@ const FormSchema = z
   .refine((d) => d.startDate < d.endDate, {
     message: 'La date de début doit précéder la date de fin',
     path: ['startDate'],
+  })
+  .superRefine((d, ctx) => {
+    if (d.startDate < CRYPTO_START_DATES[d.cryptoId]) {
+      const { label, date } = CRYPTO_START_LABELS[d.cryptoId];
+      ctx.addIssue({
+        code: 'custom',
+        path: ['startDate'],
+        message: `Les données ${label} démarrent le ${date}. Choisissez une date à partir du ${date}.`,
+      });
+    }
   });
 
 type FieldErrors = Partial<Record<keyof FormValues, string>>;
@@ -77,6 +109,19 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
 
   const set = <K extends keyof FormValues>(k: K, v: FormValues[K]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
+
+  // Quand la crypto change, on remonte automatiquement la date de début si
+  // elle tombe avant la fenêtre disponible pour la nouvelle crypto.
+  const setCryptoId = (id: CryptoId) => {
+    setForm((prev) => {
+      const minStart = CRYPTO_START_DATES[id];
+      return {
+        ...prev,
+        cryptoId: id,
+        startDate: prev.startDate < minStart ? minStart : prev.startDate,
+      };
+    });
+  };
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -101,7 +146,7 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
       {/* Cryptomonnaie */}
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-ink-muted">Cryptomonnaie</span>
-        <select value={form.cryptoId} onChange={(e) => set('cryptoId', e.target.value as CryptoId)} className={INPUT}>
+        <select value={form.cryptoId} onChange={(e) => setCryptoId(e.target.value as CryptoId)} className={INPUT}>
           {UI_CRYPTO_IDS.map((id) => <option key={id} value={id}>{CRYPTO_LABELS[id]}</option>)}
         </select>
       </label>
@@ -155,7 +200,7 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
       {/* Date de début */}
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-ink-muted">Date de début</span>
-        <input type="date" min="2018-01-04" max={form.endDate} value={form.startDate}
+        <input type="date" min={CRYPTO_START_DATES[form.cryptoId]} max={form.endDate} value={form.startDate}
           onChange={(e) => set('startDate', e.target.value)} aria-invalid={!!errors.startDate || undefined} className={INPUT} />
         {errors.startDate && <span className="text-xs text-red-400">{errors.startDate}</span>}
       </label>

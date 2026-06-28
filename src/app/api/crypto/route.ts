@@ -20,10 +20,10 @@ const QuerySchema = z.object({
 ).refine(
   (d) => {
     const diffMs = new Date(d.to).getTime() - new Date(d.from).getTime();
-    const tenYearsMs = 10 * 365.25 * 24 * 60 * 60 * 1000;
-    return diffMs <= tenYearsMs;
+    const fifteenYearsMs = 15 * 365.25 * 24 * 60 * 60 * 1000;
+    return diffMs <= fifteenYearsMs;
   },
-  { message: 'La plage ne peut pas dépasser 10 ans.' },
+  { message: 'La plage ne peut pas dépasser 15 ans.' },
 );
 
 // ── Handler GET ────────────────────────────────────────────

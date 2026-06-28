@@ -42,7 +42,7 @@ yarn-error.log*
 next-env.d.ts
 
 btc.json
-euth.json
+eth.json
 
 # local embed test page (not committed)
 /test-embed.html

@@ -121,10 +121,10 @@ describe('lumpSumStrategy', () => {
   // limite où startDate précède le tout premier point de la série entière),
   // le moteur reste strict et lève une erreur explicite — pas de premier
   // prix après implicite, qui créerait un achat fantôme silencieux.
-  // En production : le formulaire borne min="2018-01-04" (premier point
-  // de la série fallback) ET le provider préfixe systématiquement le point
-  // d'ancrage quand il existe, donc ce chemin n'est atteint que par appel
-  // direct au moteur avec une startDate antérieure à toute donnée.
+  // En production : le formulaire borne min="2015-08-06" (premier point
+  // commun aux séries fallback BTC/ETH) ET le provider préfixe systématiquement
+  // le point d'ancrage quand il existe, donc ce chemin n'est atteint que par
+  // appel direct au moteur avec une startDate antérieure à toute donnée.
   it('aucun point d\'ancrage fourni → erreur explicite', () => {
     const prices: MarketPoint[] = [
       { timestamp: utc('2018-01-04').getTime(), price: 12399 },
