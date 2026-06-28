@@ -22,7 +22,7 @@ export default function CryptoSimulator({ mode }: Props) {
       <section className="grid gap-6 lg:grid-cols-[420px_1fr]">
         <SimulationForm onSubmit={run} loading={state.phase === 'loading'} />
 
-        <div className="flex min-h-[200px] items-start">
+        <div className="flex min-h-50 items-start">
           {state.phase === 'idle' && (
             <div className="flex w-full flex-col gap-4 self-center">
               <p className="text-sm text-ink-muted">
