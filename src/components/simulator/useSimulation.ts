@@ -1,36 +1,35 @@
 import { useCallback, useRef, useState } from 'react';
 import type { FormValues } from './SimulationForm';
-import type { CryptoId, DcaFrequency, InvestmentMode, MarketPoint, SimulationResult } from '@/types/simulation';
+import type { CryptoId, DcaFrequency, MarketPoint, SimulationResult } from '@/types/simulation';
 import { toUTCMidnight } from '@/lib/simulation/date-utils';
 import { dcaStrategy } from '@/lib/simulation/calculate-dca';
 import { lumpSumStrategy } from '@/lib/simulation/calculate-lump-sum';
+import { CRYPTO_START_LABELS } from '@/lib/crypto/crypto-metadata';
 
 // ── Messages d'erreur ──────────────────────────────────────
 
-// Date du premier point disponible par série (fallback hebdomadaire).
-// Utilisé pour informer l'utilisateur quand sa plage est antérieure aux
-// données dont on dispose réellement.
-const DATA_START_LABEL: Partial<Record<CryptoId, string>> = {
-  bitcoin: 'le 5 septembre 2013',
-  ethereum: 'le 6 août 2015',
-};
-
 function noPriceDataMessage(cryptoId: CryptoId): string {
-  const label = DATA_START_LABEL[cryptoId];
-  return label
-    ? `Aucune donnée de prix disponible pour cette période. Les données démarrent ${label}.`
-    : 'Aucune donnée de prix disponible pour cette période.';
+  const label = CRYPTO_START_LABELS[cryptoId];
+  return `Aucune donnée de prix disponible pour cette période. Les données démarrent le ${label}.`;
 }
 
 // ── Types d'état ───────────────────────────────────────────
 
-export interface SubmittedParams {
-  cryptoId: CryptoId;
-  mode: InvestmentMode;
-  frequency: DcaFrequency;
-  startDate: string;
-  endDate: string;
-}
+// Union discriminée par mode : `frequency` n'a de sens qu'en DCA.
+export type SubmittedParams =
+  | {
+      mode: 'lump-sum';
+      cryptoId: CryptoId;
+      startDate: string;
+      endDate: string;
+    }
+  | {
+      mode: 'dca';
+      cryptoId: CryptoId;
+      frequency: DcaFrequency;
+      startDate: string;
+      endDate: string;
+    };
 
 export type SimulatorState =
   | { phase: 'idle' }
@@ -96,17 +95,23 @@ export function useSimulation() {
       return;
     }
 
-    setState({
-      phase: 'success',
-      result,
-      lastParams: {
-        cryptoId: fv.cryptoId,
-        mode: fv.mode,
-        frequency: fv.frequency,
-        startDate: fv.startDate,
-        endDate: fv.endDate,
-      },
-    });
+    const lastParams: SubmittedParams =
+      fv.mode === 'dca'
+        ? {
+            mode: 'dca',
+            cryptoId: fv.cryptoId,
+            frequency: fv.frequency,
+            startDate: fv.startDate,
+            endDate: fv.endDate,
+          }
+        : {
+            mode: 'lump-sum',
+            cryptoId: fv.cryptoId,
+            startDate: fv.startDate,
+            endDate: fv.endDate,
+          };
+
+    setState({ phase: 'success', result, lastParams });
   }, []);
 
   const retry = useCallback(() => {

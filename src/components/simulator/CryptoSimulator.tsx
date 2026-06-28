@@ -66,14 +66,7 @@ export default function CryptoSimulator({ mode }: Props) {
           )}
 
           {state.phase === 'success' && (
-            <ResultSummary
-              result={state.result}
-              cryptoId={state.lastParams.cryptoId}
-              mode={state.lastParams.mode}
-              frequency={state.lastParams.frequency}
-              startDate={state.lastParams.startDate}
-              endDate={state.lastParams.endDate}
-            />
+            <ResultSummary result={state.result} params={state.lastParams} />
           )}
         </div>
       </section>

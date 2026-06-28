@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import { z } from 'zod';
 import type { CryptoId, InvestmentMode, DcaFrequency } from '@/types/simulation';
+import {
+  CRYPTO_START_DATES,
+  CRYPTO_START_LABELS,
+  getCryptoLabel,
+  getCryptoName,
+} from '@/lib/crypto/crypto-metadata';
 
 // Sous-ensemble exposé dans l'UI. L'allowlist Zod (types/simulation.ts)
 // reste plus large pour rester extensible côté provider sans toucher au form.
@@ -22,39 +28,12 @@ export interface FormValues {
 
 // ── Constantes ─────────────────────────────────────────────
 
-const CRYPTO_LABELS: Record<(typeof UI_CRYPTO_IDS)[number], string> = {
-  bitcoin: 'Bitcoin (BTC)',
-  ethereum: 'Ethereum (ETH)',
-};
-
 const FREQ_LABELS: Record<(typeof UI_FREQUENCIES)[number], string> = {
   weekly: 'Hebdomadaire',
   monthly: 'Mensuel',
 };
 
 const TODAY = new Date().toISOString().slice(0, 10);
-
-// Premier point disponible (Kraken hebdomadaire) par crypto. Sert à borner
-// dynamiquement le champ « date de début » selon la crypto sélectionnée.
-const CRYPTO_START_DATES: Record<CryptoId, string> = {
-  bitcoin:     '2013-09-05', // premier point Kraken BTC/EUR
-  ethereum:    '2015-08-06', // premier point Kraken ETH/EUR
-  solana:      '2015-08-06',
-  binancecoin: '2015-08-06',
-  ripple:      '2015-08-06',
-  cardano:     '2015-08-06',
-};
-
-// Libellés pour le message d'erreur inline quand la date de début est
-// antérieure aux données disponibles. Le format date est en français lisible.
-const CRYPTO_START_LABELS: Record<CryptoId, { label: string; date: string }> = {
-  bitcoin:     { label: 'Bitcoin',  date: '5 septembre 2013' },
-  ethereum:    { label: 'Ethereum', date: '6 août 2015' },
-  solana:      { label: 'Solana',   date: '6 août 2015' },
-  binancecoin: { label: 'BNB',      date: '6 août 2015' },
-  ripple:      { label: 'XRP',      date: '6 août 2015' },
-  cardano:     { label: 'Cardano',  date: '6 août 2015' },
-};
 
 const DEFAULTS: FormValues = {
   cryptoId: 'bitcoin',
@@ -82,11 +61,12 @@ const FormSchema = z
   })
   .superRefine((d, ctx) => {
     if (d.startDate < CRYPTO_START_DATES[d.cryptoId]) {
-      const { label, date } = CRYPTO_START_LABELS[d.cryptoId];
+      const name = getCryptoName(d.cryptoId);
+      const date = CRYPTO_START_LABELS[d.cryptoId];
       ctx.addIssue({
         code: 'custom',
         path: ['startDate'],
-        message: `Les données ${label} démarrent le ${date}. Choisissez une date à partir du ${date}.`,
+        message: `Les données ${name} démarrent le ${date}. Choisissez une date à partir du ${date}.`,
       });
     }
   });
@@ -147,7 +127,7 @@ export default function SimulationForm({ onSubmit, loading }: Props) {
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-ink-muted">Cryptomonnaie</span>
         <select value={form.cryptoId} onChange={(e) => setCryptoId(e.target.value as CryptoId)} className={INPUT}>
-          {UI_CRYPTO_IDS.map((id) => <option key={id} value={id}>{CRYPTO_LABELS[id]}</option>)}
+          {UI_CRYPTO_IDS.map((id) => <option key={id} value={id}>{getCryptoLabel(id)}</option>)}
         </select>
       </label>
 

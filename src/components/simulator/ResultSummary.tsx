@@ -1,27 +1,16 @@
-import type { CryptoId, DcaFrequency, InvestmentMode, SimulationResult } from '@/types/simulation';
+import type { SimulationResult } from '@/types/simulation';
 import { formatCurrency, formatPercent } from '@/lib/simulation/format-money';
+import { getCryptoName } from '@/lib/crypto/crypto-metadata';
+import type { SubmittedParams } from './useSimulation';
 
 // ── Props ──────────────────────────────────────────────────
 
 interface Props {
-  result: SimulationResult & { status: 'success' };
-  cryptoId: CryptoId;
-  mode: InvestmentMode;
-  frequency: DcaFrequency;
-  startDate: string;
-  endDate: string;
+  result: Extract<SimulationResult, { status: 'success' }>;
+  params: SubmittedParams;
 }
 
 // ── Labels ─────────────────────────────────────────────────
-
-const CRYPTO_NAMES: Record<CryptoId, string> = {
-  bitcoin: 'Bitcoin',
-  ethereum: 'Ethereum',
-  solana: 'Solana',
-  binancecoin: 'BNB',
-  ripple: 'XRP',
-  cardano: 'Cardano',
-};
 
 function fmtDate(iso: string): string {
   return new Date(iso + 'T00:00:00').toLocaleDateString('fr-FR', {
@@ -32,13 +21,9 @@ function fmtDate(iso: string): string {
 
 // Libellé unité pour le compte de versements selon le mode/fréquence.
 // "78 mois", "443 semaines", ou "versement unique" pour le lump-sum.
-function paymentsLabel(
-  mode: InvestmentMode,
-  frequency: DcaFrequency,
-  count: number,
-): string {
-  if (mode === 'lump-sum') return 'versement unique';
-  switch (frequency) {
+function paymentsLabel(params: SubmittedParams, count: number): string {
+  if (params.mode === 'lump-sum') return 'versement unique';
+  switch (params.frequency) {
     case 'weekly':  return `${count} semaines`;
     case 'monthly': return `${count} mois`;
     case 'daily':   return `${count} jours`;
@@ -47,16 +32,18 @@ function paymentsLabel(
 
 // ── Composant ──────────────────────────────────────────────
 
-export default function ResultSummary({ result, cryptoId, mode, frequency, startDate, endDate }: Props) {
+export default function ResultSummary({ result, params }: Props) {
   const r = result;
+  const { cryptoId, mode, startDate, endDate } = params;
   const positive = r.gainLoss >= 0;
   const colorCls = positive ? 'text-accent' : 'text-orange-400';
-  const periodLabel = paymentsLabel(mode, frequency, r.paymentCount);
+  const periodLabel = paymentsLabel(params, r.paymentCount);
+  const cryptoName = getCryptoName(cryptoId);
 
   const narrative =
     mode === 'dca'
-      ? `En investissant ${formatCurrency(r.totalInvested)} en ${CRYPTO_NAMES[cryptoId]} en ${periodLabel} (de ${fmtDate(startDate)} à ${fmtDate(endDate)}), votre portefeuille vaudrait ${formatCurrency(r.finalValue)}.`
-      : `En investissant ${formatCurrency(r.totalInvested)} en ${CRYPTO_NAMES[cryptoId]} en ${fmtDate(startDate)}, votre portefeuille vaudrait ${formatCurrency(r.finalValue)} en ${fmtDate(endDate)}.`;
+      ? `En investissant ${formatCurrency(r.totalInvested)} en ${cryptoName} en ${periodLabel} (de ${fmtDate(startDate)} à ${fmtDate(endDate)}), votre portefeuille vaudrait ${formatCurrency(r.finalValue)}.`
+      : `En investissant ${formatCurrency(r.totalInvested)} en ${cryptoName} en ${fmtDate(startDate)}, votre portefeuille vaudrait ${formatCurrency(r.finalValue)} en ${fmtDate(endDate)}.`;
 
   const kpis: { label: string; value: string; color?: string }[] = [
     { label: 'Total investi', value: formatCurrency(r.totalInvested) },
@@ -74,7 +61,7 @@ export default function ResultSummary({ result, cryptoId, mode, frequency, start
         {narrative}
         {' '}
         <span className="text-ink-faint">
-          ({r.totalQuantity.toFixed(6)} {CRYPTO_NAMES[cryptoId]} accumulés)
+          ({r.totalQuantity.toFixed(6)} {cryptoName} accumulés)
         </span>
       </p>
 
