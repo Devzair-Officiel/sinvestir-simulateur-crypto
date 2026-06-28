@@ -53,12 +53,11 @@ export const lumpSumStrategy: SimulationStrategy<'lump-sum'> = {
         value: quantity * p.price,
       }));
 
-    // Valeur finale = dernier point valide, fallback au prix d'achat
-    const endPoint = findLastPointBefore(prices, endTs);
-    const finalPrice =
-      endPoint && isValidPrice(endPoint.price)
-        ? endPoint.price
-        : startPoint.price;
+    // Valeur finale = dernier point connu ≤ endDate. Garantie non-null car
+    // endTs ≥ startTs et startPoint est déjà valide : findLastPointBefore
+    // matche au minimum startPoint.
+    const endPoint = findLastPointBefore(prices, endTs)!;
+    const finalPrice = isValidPrice(endPoint.price) ? endPoint.price : startPoint.price;
 
     const finalValue = quantity * finalPrice;
     const gainLoss = finalValue - amount;
